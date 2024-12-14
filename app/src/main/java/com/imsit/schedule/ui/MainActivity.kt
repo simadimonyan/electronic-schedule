@@ -1,5 +1,6 @@
 package com.imsit.schedule.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -17,25 +19,32 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,9 +59,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.imsit.schedule.R
+import com.imsit.schedule.models.Schedule
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
+import kotlinx.coroutines.DEBUG_PROPERTY_NAME
+import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,21 +76,38 @@ class MainActivity : ComponentActivity() {
         setContent {
             GroupPreview()
         }
+        System.setProperty(DEBUG_PROPERTY_NAME, DEBUG_PROPERTY_VALUE_ON)
     }
 }
 
+@SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupFields(
-    course: Int,
-    speciality: Int,
-    group: Int
-) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
+fun GroupFields() {
+    val scope = rememberCoroutineScope()
+
+    var course: String by remember { mutableStateOf("Выбрать") }
+    var speciality: String by remember { mutableStateOf("Выбрать") }
+    var group: String by remember { mutableStateOf("Выбрать") }
+
+    val sheetState = rememberModalBottomSheetState()
     var selectedIndex by remember { mutableIntStateOf(0) }
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
+    var groups by remember { mutableStateOf<HashMap<String, ArrayList<Schedule.Group>>?>(
+        HashMap()
+    ) }
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            val schedule = Schedule()
+            val loadedGroups = withContext(Dispatchers.IO) {
+                schedule.loadData()
+            }
+            groups = loadedGroups
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -123,7 +155,7 @@ fun GroupFields(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "1 курс",
+                        text = course,
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -173,7 +205,7 @@ fun GroupFields(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "СПО",
+                    text = speciality,
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -221,7 +253,7 @@ fun GroupFields(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Выбрать",
+                    text = group,
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -231,35 +263,76 @@ fun GroupFields(
 
     if (showBottomSheet) {
         ModalBottomSheet(
-            modifier = Modifier.fillMaxHeight(),
+            modifier = Modifier
+                .wrapContentHeight(),
             sheetState = sheetState,
+            shape = RoundedCornerShape(17.dp),
             onDismissRequest = { showBottomSheet = false }
         ) {
-            BottomSheet(selectedIndex)
+            BottomSheet(selectedIndex, groups?: HashMap()
+            ) { newValue ->
+                when(selectedIndex) {
+                    0 -> course = newValue
+                    1 -> speciality = newValue
+                    2 -> group = newValue
+                }
+                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                    if (!sheetState.isVisible) {
+                        showBottomSheet = false
+                    }
+                }
+            }
         }
     }
 
 }
 
 @Composable
-fun BottomSheet(index: Int) {
-    if (index == 0) {
-        Text(
-            "Курсы",
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-    else if (index == 1) {
-        Text(
-            "Специальности",
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-    else {
-        Text(
-            "Группы",
-            modifier = Modifier.padding(16.dp)
-        )
+fun BottomSheet(
+    index: Int,
+    groups: HashMap<String, ArrayList<Schedule.Group>>,
+    updateValue: (String) -> Unit
+) {
+    when (index) {
+        0 -> {
+            groups.let { loadedGroups ->
+                for ((k, i) in loadedGroups.keys.withIndex()) {
+
+                    if (loadedGroups[i]?.isEmpty() == true) {
+                        Spacer(modifier = Modifier.height(7.dp))
+                        continue
+                    }
+
+                    if (k != 0)
+                        HorizontalDivider(thickness = 0.5.dp,
+                            modifier = Modifier.padding(25.dp, 0.dp))
+
+                    Text(
+                        i,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .fillMaxWidth()
+                            .clickable(
+                                onClick = { updateValue(i) }
+                            ),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+        }
+        1 -> {
+            Text(
+                "Специальности",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+        else -> {
+            Text(
+                "Группы",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 }
 
@@ -318,8 +391,6 @@ fun CustomAppBar() {
                             .size(55.dp)
                             .padding(0.dp, 15.dp, 0.dp, 0.dp)
                             .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
                                 onClick = { selectedIndex = 0 }
                             )
                     )
@@ -363,7 +434,7 @@ fun GroupPreview() {
                     fontWeight = FontWeight.Bold
                 )
 
-                GroupFields(0,0 , 0)
+                GroupFields()
 
                 Button(onClick = { /* TODO */},
                     modifier = Modifier
