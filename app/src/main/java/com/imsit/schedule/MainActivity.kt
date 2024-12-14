@@ -1,4 +1,4 @@
-package com.imsit.schedule.ui
+package com.imsit.schedule
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,9 +29,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,13 +57,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.imsit.schedule.R
+import com.imsit.schedule.models.CacheManager
+import com.imsit.schedule.models.CacheUpdater
 import com.imsit.schedule.models.Schedule
+import com.imsit.schedule.system.NotificationsManager
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
-import kotlinx.coroutines.DEBUG_PROPERTY_NAME
-import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,40 +73,66 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            GroupPreview()
+            PreviewWrapper()
         }
-        System.setProperty(DEBUG_PROPERTY_NAME, DEBUG_PROPERTY_VALUE_ON)
     }
+}
+
+@Preview
+@Composable
+fun PreviewWrapper() {
+    val context = LocalContext.current
+    val cacheManager = remember { CacheManager(context) }
+    val coroutineScope = rememberCoroutineScope()
+    var loading by remember { mutableStateOf(true) }
+    var groups by remember { mutableStateOf<HashMap<String, ArrayList<Schedule.Group>>?>(HashMap()) }
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            NotificationsManager().createNotificationChannel(context)
+            try {
+                if (cacheManager.shouldUpdateCache()) {
+                    val schedule = Schedule()
+                    val loadedGroups = withContext(Dispatchers.IO) {
+                        schedule.loadData()
+                    }
+                    loading = true
+                    groups = loadedGroups
+
+                    cacheManager.saveGroupsToCache(groups!!)
+                    cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
+                    loading = false
+                } else {
+                    groups = cacheManager.loadGroupsFromCache()
+                    loading = false
+                }
+            }
+            catch (e: Exception) {
+                loading = true
+                groups = cacheManager.loadGroupsFromCache()
+                if (groups?.size!! > 1)
+                    loading = false
+            }
+            CacheUpdater().setupPeriodicWork(context,
+                cacheManager.getLastUpdatedTime())
+        }
+    }
+    groups?.let { GroupPreview(it, loading) }
 }
 
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupFields() {
+fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean) {
     val scope = rememberCoroutineScope()
 
-    var course: String by remember { mutableStateOf("Выбрать") }
-    var speciality: String by remember { mutableStateOf("Выбрать") }
+    var course: String by remember { mutableStateOf("1 курс") }
+    var speciality: String by remember { mutableStateOf("СПО") }
     var group: String by remember { mutableStateOf("Выбрать") }
 
     val sheetState = rememberModalBottomSheetState()
     var selectedIndex by remember { mutableIntStateOf(0) }
     var showBottomSheet by remember { mutableStateOf(false) }
-
-    val coroutineScope = rememberCoroutineScope()
-    var groups by remember { mutableStateOf<HashMap<String, ArrayList<Schedule.Group>>?>(
-        HashMap()
-    ) }
-
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            val schedule = Schedule()
-            val loadedGroups = withContext(Dispatchers.IO) {
-                schedule.loadData()
-            }
-            groups = loadedGroups
-        }
-    }
 
     Card(
         modifier = Modifier
@@ -269,16 +294,30 @@ fun GroupFields() {
             shape = RoundedCornerShape(17.dp),
             onDismissRequest = { showBottomSheet = false }
         ) {
-            BottomSheet(selectedIndex, groups?: HashMap()
-            ) { newValue ->
-                when(selectedIndex) {
-                    0 -> course = newValue
-                    1 -> speciality = newValue
-                    2 -> group = newValue
-                }
-                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                    if (!sheetState.isVisible) {
-                        showBottomSheet = false
+            if (loading) {
+                Text(
+                    "Обновляем данные... ",
+                    modifier = Modifier
+                        .padding(10.dp, 10.dp, 0.dp, 10.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontSize = 17.sp
+                )
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().padding(50.dp, 10.dp),
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            } else {
+                BottomSheet(selectedIndex, groups) { newValue ->
+                    when (selectedIndex) {
+                        0 -> course = newValue
+                        1 -> speciality = newValue
+                        2 -> group = newValue
+                    }
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showBottomSheet = false
+                        }
                     }
                 }
             }
@@ -391,6 +430,8 @@ fun CustomAppBar() {
                             .size(55.dp)
                             .padding(0.dp, 15.dp, 0.dp, 0.dp)
                             .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
                                 onClick = { selectedIndex = 0 }
                             )
                     )
@@ -414,9 +455,9 @@ fun CustomAppBar() {
     }
 }
 
-@Preview
+
 @Composable
-fun GroupPreview() {
+fun GroupPreview(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean) {
     ScheduleTheme {
 
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background) { innerPadding ->
@@ -434,7 +475,7 @@ fun GroupPreview() {
                     fontWeight = FontWeight.Bold
                 )
 
-                GroupFields()
+                GroupFields(groups, loading)
 
                 Button(onClick = { /* TODO */},
                     modifier = Modifier
