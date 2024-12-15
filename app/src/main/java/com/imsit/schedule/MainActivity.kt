@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -78,12 +80,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("MutableCollectionMutableState")
 @Preview
 @Composable
 fun PreviewWrapper() {
     val context = LocalContext.current
     val cacheManager = remember { CacheManager(context) }
     val coroutineScope = rememberCoroutineScope()
+    var progress by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var groups by remember { mutableStateOf<HashMap<String, ArrayList<Schedule.Group>>?>(HashMap()) }
 
@@ -94,7 +98,9 @@ fun PreviewWrapper() {
                 if (cacheManager.shouldUpdateCache()) {
                     val schedule = Schedule()
                     val loadedGroups = withContext(Dispatchers.IO) {
-                        schedule.loadData()
+                        schedule.loadData { newProgress ->
+                            progress = newProgress // Update progress
+                        }
                     }
                     loading = true
                     groups = loadedGroups
@@ -108,6 +114,7 @@ fun PreviewWrapper() {
                 }
             }
             catch (e: Exception) {
+                e.printStackTrace()
                 loading = true
                 groups = cacheManager.loadGroupsFromCache()
                 if (groups?.size!! > 1)
@@ -117,13 +124,13 @@ fun PreviewWrapper() {
                 cacheManager.getLastUpdatedTime())
         }
     }
-    groups?.let { GroupPreview(it, loading) }
+    groups?.let { GroupPreview(it, loading, progress) }
 }
 
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean) {
+fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean, progress: Int) {
     val scope = rememberCoroutineScope()
 
     var course: String by remember { mutableStateOf("1 курс") }
@@ -303,7 +310,21 @@ fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boo
                     textAlign = TextAlign.Center,
                     fontSize = 17.sp
                 )
+
+                val animatedProgress = remember { Animatable(0f) }
+
+                // Animate the progress value
+                LaunchedEffect(progress) {
+                    animatedProgress.animateTo(progress / 100f,
+                        animationSpec = tween(durationMillis = 500,
+                            easing = LinearEasing)
+                    )
+                }
+
                 LinearProgressIndicator(
+                    progress = {
+                        animatedProgress.value
+                    },
                     modifier = Modifier.fillMaxWidth().padding(50.dp, 10.dp),
                 )
                 Spacer(modifier = Modifier.height(20.dp))
@@ -457,7 +478,7 @@ fun CustomAppBar() {
 
 
 @Composable
-fun GroupPreview(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean) {
+fun GroupPreview(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean, progress: Int) {
     ScheduleTheme {
 
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background) { innerPadding ->
@@ -475,7 +496,7 @@ fun GroupPreview(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Bo
                     fontWeight = FontWeight.Bold
                 )
 
-                GroupFields(groups, loading)
+                GroupFields(groups, loading, progress)
 
                 Button(onClick = { /* TODO */},
                     modifier = Modifier

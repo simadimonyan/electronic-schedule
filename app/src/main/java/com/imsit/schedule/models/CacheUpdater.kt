@@ -53,6 +53,7 @@ class CacheUpdater {
 
 }
 
+@Suppress("SameParameterValue")
 class GroupSyncWorker(
     context: Context,
     workerParams: WorkerParameters
@@ -68,7 +69,9 @@ class GroupSyncWorker(
             val schedule = Schedule()
             val loadedGroups = withContext(Dispatchers.IO) {
                 Log.d("GroupSyncWorker", "loading data")
-                schedule.loadData()
+                schedule.loadData { newProgress ->
+                    updateProgressNotification(newProgress) // Update progress
+                }
             }
 
             cacheManager.saveGroupsToCache(loadedGroups)
@@ -83,12 +86,12 @@ class GroupSyncWorker(
         }
     }
 
-    fun createNotification(message: String): Notification {
+    private fun createNotification(message: String): Notification {
         return NotificationCompat.Builder(applicationContext, "GROUP_SYNC_CHANNEL")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Обновление расписания")
             .setContentText(message)
-            .setProgress(100, 0, true)
+            .setProgress(100, 0, false)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
@@ -96,7 +99,24 @@ class GroupSyncWorker(
             .build()
     }
 
-    fun cancelNotification() {
+    private fun updateProgressNotification(progress: Int) {
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val updatedNotification = NotificationCompat.Builder(applicationContext, "GROUP_SYNC_CHANNEL")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Обновление расписания")
+            .setContentText("Получаем данные с сервера...")
+            .setProgress(100, progress, false)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setOngoing(true)
+            .build()
+
+        notificationManager.notify(1, updatedNotification)
+    }
+
+    private fun cancelNotification() {
         val notificationManager = applicationContext
             .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(1)
