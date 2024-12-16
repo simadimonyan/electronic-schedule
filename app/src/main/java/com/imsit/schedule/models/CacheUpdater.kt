@@ -1,10 +1,7 @@
 package com.imsit.schedule.models
 
-import android.app.Notification
-import android.app.NotificationManager
 import android.content.Context
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -13,7 +10,9 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.imsit.schedule.R
+import com.imsit.schedule.viewmodels.NotificationsManager.Companion.cancelNotification
+import com.imsit.schedule.viewmodels.NotificationsManager.Companion.createNotification
+import com.imsit.schedule.viewmodels.NotificationsManager.Companion.updateProgressNotification
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -61,24 +60,26 @@ class GroupSyncWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            val notification = createNotification("Получаем данные с сервера")
-            Log.d("GroupSyncWorker", "notification created: $notification visibility: ${notification.visibility}")
-            setForeground(ForegroundInfo(1, notification))
+            if (CacheManager(applicationContext).getLastUpdatedTime() != 0L) {
+                val notification = createNotification(applicationContext,"Получаем данные с сервера")
+                Log.d("GroupSyncWorker", "notification created: $notification visibility: ${notification.visibility}")
+                setForeground(ForegroundInfo(1, notification))
 
-            val cacheManager = CacheManager(applicationContext)
-            val schedule = Schedule()
-            val loadedGroups = withContext(Dispatchers.IO) {
-                Log.d("GroupSyncWorker", "loading data")
-                schedule.loadData { newProgress ->
-                    updateProgressNotification(newProgress) // Update progress
+                val cacheManager = CacheManager(applicationContext)
+                val schedule = Schedule()
+                val loadedGroups = withContext(Dispatchers.IO) {
+                    Log.d("GroupSyncWorker", "loading data")
+                    schedule.loadData { newProgress ->
+                        updateProgressNotification(1, applicationContext, newProgress) // Update progress
+                    }
                 }
+
+                cacheManager.saveGroupsToCache(loadedGroups)
+                cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
+                Log.d("GroupSyncWorker", "data cached")
+
+                cancelNotification(1, applicationContext)
             }
-
-            cacheManager.saveGroupsToCache(loadedGroups)
-            cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
-            Log.d("GroupSyncWorker", "data cached")
-
-            cancelNotification()
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -86,39 +87,4 @@ class GroupSyncWorker(
         }
     }
 
-    private fun createNotification(message: String): Notification {
-        return NotificationCompat.Builder(applicationContext, "GROUP_SYNC_CHANNEL")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Обновление расписания")
-            .setContentText(message)
-            .setProgress(100, 0, false)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setOngoing(true)
-            .build()
-    }
-
-    private fun updateProgressNotification(progress: Int) {
-        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        val updatedNotification = NotificationCompat.Builder(applicationContext, "GROUP_SYNC_CHANNEL")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Обновление расписания")
-            .setContentText("Получаем данные с сервера...")
-            .setProgress(100, progress, false)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setOngoing(true)
-            .build()
-
-        notificationManager.notify(1, updatedNotification)
-    }
-
-    private fun cancelNotification() {
-        val notificationManager = applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(1)
-    }
 }

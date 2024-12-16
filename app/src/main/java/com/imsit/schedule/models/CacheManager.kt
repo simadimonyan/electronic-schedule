@@ -32,7 +32,7 @@ class CacheManager(context: Context) {
         preferences.edit().putString(groupsCacheKey, json).apply()
     }
 
-    fun loadGroupsFromCache(): HashMap<String, ArrayList<Group>>? {
+    fun loadGroupsFromCache(): HashMap<String, ArrayList<Group>> {
         val json = preferences.getString(groupsCacheKey, null) ?: return HashMap()
 
         val type = object : TypeToken<HashMap<String, ArrayList<Group>>>() {}.type

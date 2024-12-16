@@ -1,6 +1,8 @@
 package com.imsit.schedule
 
 import android.annotation.SuppressLint
+import android.app.NotificationManager
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,7 +64,7 @@ import androidx.compose.ui.unit.sp
 import com.imsit.schedule.models.CacheManager
 import com.imsit.schedule.models.CacheUpdater
 import com.imsit.schedule.models.Schedule
-import com.imsit.schedule.system.NotificationsManager
+import com.imsit.schedule.viewmodels.NotificationsManager
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
@@ -93,21 +95,42 @@ fun PreviewWrapper() {
 
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            NotificationsManager().createNotificationChannel(context)
+            NotificationsManager.createNotificationChannel(context)
             try {
                 if (cacheManager.shouldUpdateCache()) {
-                    val schedule = Schedule()
-                    val loadedGroups = withContext(Dispatchers.IO) {
-                        schedule.loadData { newProgress ->
-                            progress = newProgress // Update progress
-                        }
-                    }
-                    loading = true
-                    groups = loadedGroups
+                    try {
+                        val schedule = Schedule()
 
-                    cacheManager.saveGroupsToCache(groups!!)
-                    cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
-                    loading = false
+                        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        val notification = NotificationsManager.createNotification(context,
+                            "Получаем данные с сервера")
+                        notificationManager.notify(2, notification)
+
+                        val loadedGroups = withContext(Dispatchers.IO) {
+                            schedule.loadData { newProgress ->
+                                progress = newProgress // Update progress
+                                NotificationsManager.updateProgressNotification(2, context, progress)
+                            }
+                        }
+                        loading = true
+                        groups = loadedGroups
+
+                        cacheManager.saveGroupsToCache(groups!!)
+                        cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
+
+                        NotificationsManager.cancelNotification(2, context)
+                        loading = false
+                    }
+                    catch (e: Exception) {
+                        e.printStackTrace()
+
+                        // use from cache if connection has lost
+                        loading = true
+                        groups = cacheManager.loadGroupsFromCache()
+                        if (groups?.size!! > 1)
+                            loading = false
+
+                    }
                 } else {
                     groups = cacheManager.loadGroupsFromCache()
                     loading = false
@@ -115,15 +138,11 @@ fun PreviewWrapper() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                loading = true
-                groups = cacheManager.loadGroupsFromCache()
-                if (groups?.size!! > 1)
-                    loading = false
             }
-            CacheUpdater().setupPeriodicWork(context,
-                cacheManager.getLastUpdatedTime())
+
         }
     }
+    CacheUpdater().setupPeriodicWork(context, cacheManager.getLastUpdatedTime())
     groups?.let { GroupPreview(it, loading, progress) }
 }
 
