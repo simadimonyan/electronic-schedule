@@ -27,16 +27,16 @@ class CacheManager(context: Context) {
         return (currentTime - getLastUpdatedTime()) > cacheExpiryTime
     }
 
-    fun saveGroupsToCache(groups: HashMap<String, ArrayList<Group>>) {
+    fun saveGroupsToCache(groups: HashMap<String, HashMap<String, ArrayList<Group>>>) {
         val json = gson.toJson(groups)
         preferences.edit().putString(groupsCacheKey, json).apply()
     }
 
-    fun loadGroupsFromCache(): HashMap<String, ArrayList<Group>> {
+    fun loadGroupsFromCache(): HashMap<String, HashMap<String, ArrayList<Group>>> {
         val json = preferences.getString(groupsCacheKey, null) ?: return HashMap()
 
-        val type = object : TypeToken<HashMap<String, ArrayList<Group>>>() {}.type
-        val groups: HashMap<String, ArrayList<Group>> = try {
+        val type = object : TypeToken<HashMap<String, HashMap<String, ArrayList<Group>>>>() {}.type
+        val groups: HashMap<String, HashMap<String, ArrayList<Group>>> = try {
             gson.fromJson(json, type)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -46,7 +46,7 @@ class CacheManager(context: Context) {
         return if (groups.isNotEmpty()) {
             val sorted = groups.toSortedMap(Comparator.comparingInt {
                 it.split(" ")[0].toInt()
-            }).toMutableMap() as HashMap<String, ArrayList<Group>>
+            }).toMutableMap() as HashMap<String, HashMap<String, ArrayList<Group>>>
 
             sorted
         } else {

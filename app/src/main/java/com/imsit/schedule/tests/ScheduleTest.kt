@@ -8,7 +8,7 @@ class ScheduleTest {
 
     @Test
     fun loadData() {
-        val groups: HashMap<String, ArrayList<Schedule.Group>>?
+        val groups: HashMap<String, HashMap<String, ArrayList<Schedule.Group>>>
         var gap: Int
         val schedule = Schedule()
         groups = schedule.loadData { newProgress ->

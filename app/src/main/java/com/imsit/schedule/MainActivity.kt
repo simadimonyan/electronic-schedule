@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,12 +75,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PreviewWrapper()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(2)
     }
 }
 
@@ -91,7 +100,7 @@ fun PreviewWrapper() {
     val coroutineScope = rememberCoroutineScope()
     var progress by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
-    var groups by remember { mutableStateOf<HashMap<String, ArrayList<Schedule.Group>>?>(HashMap()) }
+    var groups by remember { mutableStateOf<HashMap<String, HashMap<String, ArrayList<Schedule.Group>>>>(HashMap()) }
 
     LaunchedEffect(Unit) {
         coroutineScope.launch {
@@ -115,7 +124,7 @@ fun PreviewWrapper() {
                         loading = true
                         groups = loadedGroups
 
-                        cacheManager.saveGroupsToCache(groups!!)
+                        cacheManager.saveGroupsToCache(groups)
                         cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
 
                         NotificationsManager.cancelNotification(2, context)
@@ -127,7 +136,7 @@ fun PreviewWrapper() {
                         // use from cache if connection has lost
                         loading = true
                         groups = cacheManager.loadGroupsFromCache()
-                        if (groups?.size!! > 1)
+                        if (groups.size > 1)
                             loading = false
 
                     }
@@ -143,17 +152,17 @@ fun PreviewWrapper() {
         }
     }
     CacheUpdater().setupPeriodicWork(context, cacheManager.getLastUpdatedTime())
-    groups?.let { GroupPreview(it, loading, progress) }
+    GroupPreview(groups, loading, progress)
 }
 
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean, progress: Int) {
+fun GroupFields(groups: HashMap<String, HashMap<String, ArrayList<Schedule.Group>>>, loading: Boolean, progress: Int) {
     val scope = rememberCoroutineScope()
 
     var course: String by remember { mutableStateOf("1 курс") }
-    var speciality: String by remember { mutableStateOf("СПО") }
+    var speciality: String by remember { mutableStateOf("Все специальности") }
     var group: String by remember { mutableStateOf("Выбрать") }
 
     val sheetState = rememberModalBottomSheetState()
@@ -324,7 +333,7 @@ fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boo
                 Text(
                     "Обновляем данные... ",
                     modifier = Modifier
-                        .padding(10.dp, 10.dp, 0.dp, 10.dp)
+                        .padding(10.dp, 0.dp, 10.dp, 10.dp)
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     fontSize = 17.sp
@@ -344,14 +353,23 @@ fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boo
                     progress = {
                         animatedProgress.value
                     },
-                    modifier = Modifier.fillMaxWidth().padding(50.dp, 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(50.dp, 10.dp),
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             } else {
-                BottomSheet(selectedIndex, groups) { newValue ->
+                BottomSheet(selectedIndex, groups, { newValue ->
                     when (selectedIndex) {
-                        0 -> course = newValue
-                        1 -> speciality = newValue
+                        0 -> {
+                            course = newValue
+                            group = "Выбрать"
+                            speciality = "Все специальности"
+                        }
+                        1 -> {
+                            speciality = newValue
+                            group = "Выбрать"
+                        }
                         2 -> group = newValue
                     }
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -359,7 +377,7 @@ fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boo
                             showBottomSheet = false
                         }
                     }
-                }
+                }, course, speciality)
             }
         }
     }
@@ -369,8 +387,10 @@ fun GroupFields(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boo
 @Composable
 fun BottomSheet(
     index: Int,
-    groups: HashMap<String, ArrayList<Schedule.Group>>,
-    updateValue: (String) -> Unit
+    groups: HashMap<String, HashMap<String, ArrayList<Schedule.Group>>>,
+    updateValue: (String) -> Unit,
+    courseChosen: String,
+    specialityChosen: String
 ) {
     when (index) {
         0 -> {
@@ -401,16 +421,91 @@ fun BottomSheet(
             }
         }
         1 -> {
+            groups.let { loadedGroups ->
+                for ((k, speciality) in loadedGroups[courseChosen]?.keys!!.withIndex()) {
+
+                    if (k != 0)
+                        HorizontalDivider(thickness = 0.5.dp,
+                            modifier = Modifier.padding(25.dp, 0.dp))
+
+                    Text(
+                        speciality,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .fillMaxWidth()
+                            .clickable(
+                                onClick = { updateValue(speciality) }
+                            ),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+            HorizontalDivider(thickness = 0.5.dp,
+                modifier = Modifier.padding(25.dp, 0.dp))
             Text(
-                "Специальности",
-                modifier = Modifier.padding(16.dp)
+                "Все специальности",
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
+                    .clickable(
+                        onClick = { updateValue("Все специальности") }
+                    ),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
             )
         }
         else -> {
-            Text(
-                "Группы",
-                modifier = Modifier.padding(16.dp)
-            )
+            groups.let {
+                if (specialityChosen != "Все специальности") {
+                    groups[courseChosen]?.get(specialityChosen)?.let { groupsIterator ->
+                        LazyColumn {
+                            itemsIndexed(groupsIterator) { index, group ->
+                                if (index != 0) {
+                                    HorizontalDivider(
+                                        thickness = 0.5.dp,
+                                        modifier = Modifier.padding(25.dp, 0.dp)
+                                    )
+                                }
+
+                                Text(
+                                    text = group.group,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .fillMaxWidth()
+                                        .clickable { updateValue(group.group) },
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+                    }
+                }
+                else {
+                    groups[courseChosen]?.values?.flatten()?.let { allGroups ->
+                        LazyColumn {
+                            itemsIndexed(allGroups) { index, group ->
+                                if (index != 0) {
+                                    HorizontalDivider(
+                                        thickness = 0.5.dp,
+                                        modifier = Modifier.padding(25.dp, 0.dp)
+                                    )
+                                }
+
+                                Text(
+                                    text = group.group,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .fillMaxWidth()
+                                        .clickable { updateValue(group.group) },
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -497,7 +592,7 @@ fun CustomAppBar() {
 
 
 @Composable
-fun GroupPreview(groups: HashMap<String, ArrayList<Schedule.Group>>, loading: Boolean, progress: Int) {
+fun GroupPreview(groups: HashMap<String, HashMap<String, ArrayList<Schedule.Group>>>, loading: Boolean, progress: Int) {
     ScheduleTheme {
 
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background) { innerPadding ->

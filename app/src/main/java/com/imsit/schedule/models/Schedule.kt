@@ -14,7 +14,7 @@ class Schedule {
     data class Weeks(var weekOdd: HashMap<Int, ArrayList<Lesson>>?, var weekEven: HashMap<Int, ArrayList<Lesson>>?)
     data class Lesson(val count: Int, val time: String, val type: String, val name: String?, val teacher: String?, val location: String?)
     data class Group(val group: String, val link: String, val lessons: Weeks?)
-    private var groups: HashMap<String, ArrayList<Group>> = HashMap()
+    private var groups: HashMap<String, HashMap<String, ArrayList<Group>>> = HashMap()
 
     private fun connect() {
         val url = "https://imsit.ru/timetable/stud/raspisan.html"
@@ -43,7 +43,7 @@ class Schedule {
 
     }
 
-    fun loadData(progress: (Int) -> Unit): HashMap<String, ArrayList<Group>> {
+    fun loadData(progress: (Int) -> Unit): HashMap<String, HashMap<String, ArrayList<Group>>> {
         connect()
 
         val table: Element = doc!!.select("table")[0]
@@ -54,7 +54,7 @@ class Schedule {
 
         // Get all of the courses
         for (column in columns) {
-            this.groups[column.text()] = ArrayList()
+            this.groups[column.text()] = HashMap()
         }
 
         val sorted = groups.toSortedMap(Comparator.comparingInt {
@@ -68,7 +68,7 @@ class Schedule {
 
         // Get all of the groups
         for (i in 0 until sorted.size) {
-            val array = ArrayList<Group>()
+            val specialityArray = HashMap<String, ArrayList<Group>>()
 
             for (row in rows.drop(1)) {
                 val tableData = row.select("td")
@@ -112,7 +112,7 @@ class Schedule {
                                 val count = counts.select("td")[l].text().split("-")[0].toInt()
                                 val time: String = period.select("td")[l].text()
 
-                                val regex = Regex("""^(пр\.|л\.|лаб\.)\s*([^\d]+(?:\s+[^\d]+)*)\s+([А-ЯЁ][а-яё]+ [А-ЯЁ]\.[А-ЯЁ]\.)\s+(.+)$""")
+                                val regex = Regex("""^(пр\.|л\.|лаб\.)\s*(\D+(?:\s+\D+)*)\s+([А-ЯЁ][а-яё]+ [А-ЯЁ]\.[А-ЯЁ]\.)\s+(.+)$""")
                                 val match = regex.find(text)
 
                                 val type = match?.groups?.get(1)?.value // Type: пр., л., лаб.
@@ -143,24 +143,28 @@ class Schedule {
                         if (j == 1) weeks.weekOdd = sortedWeek else weeks.weekEven = sortedWeek
                     }
 
-                    array.add(Group(tableData[i].text(), a, weeks))
+                    val speciality: String = if (tableData[i].text().contains("СПО")) "СПО"
+                        else if (tableData[i].text().contains("Мг")) "Магистратура" else "Бакалавриат"
+
+                    if (specialityArray[speciality] != null)
+                        specialityArray[speciality]?.add(Group(tableData[i].text(), a, weeks))
+                    else {
+                        val groupArray = ArrayList<Group>()
+                        groupArray.add(Group(tableData[i].text(), a, weeks))
+                        specialityArray[speciality] = groupArray
+                    }
                 }
 
             }
-            sorted[sorted.keys.elementAt(i)] = array
+            sorted[sorted.keys.elementAt(i)] = specialityArray.toSortedMap(java.util.Comparator.comparingInt
+                { it.length }).toMutableMap() as HashMap<String, ArrayList<Group>>
 
             current++
             progress((current * 100) / total)  // update the progress
         }
-        this.groups = sorted.toMutableMap() as HashMap<String, ArrayList<Group>>
+        this.groups = sorted.toMutableMap() as HashMap<String, HashMap<String, ArrayList<Group>>>
 
         return this.groups
     }
-
-    private fun getSchedule(course: String, speciality: String, group: String) {
-
-    }
-
-
 
 }
