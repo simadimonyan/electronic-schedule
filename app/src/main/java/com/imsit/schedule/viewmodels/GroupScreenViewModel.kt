@@ -118,13 +118,15 @@ class GroupScreenViewModel : ViewModel() {
             2 -> _group.value = newValue
         }
 
-        _course.value?.let { _speciality.value?.let { it1 ->
-            _group.value?.let { it2 ->
-                CacheManager.Configuration(it,
-                    it1, it2
-                )
+        _course.value.let {
+            _speciality.value.let { it1 ->
+                _group.value.let { it2 ->
+                    CacheManager.Configuration(it,
+                        it1, it2
+                    )
+                }
             }
-        } }?.let { cacheManager.saveActualConfiguration(it) }
+        }.let { cacheManager.saveActualConfiguration(it) }
     }
 
     fun restoreCache(context: Context) {
