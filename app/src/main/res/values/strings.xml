@@ -1,3 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Schedule</string>
+
+    <!-- Day Weeks -->
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="wednesday">Среда</string>
+    <string name="thursday">Четверг</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="sunday">Воскресенье</string>
+
+    <!-- UI -->
+    <string name="all_specialities">Все специальности</string>
+    <string name="choose">Выбрать</string>
+    <string name="choose_group">Выбор группы</string>
+    <string name="first_course">1 курс</string>
+    <string name="course">Курс</string>
+    <string name="speciality">Специальность</string>
+    <string name="group">Группа</string>
+    <string name="update_data">Обновляем данные…</string>
+    <string name="get_data">Получаем данные с сервера</string>
+    <string name="update_schedule">Обновление расписания</string>
 </resources>

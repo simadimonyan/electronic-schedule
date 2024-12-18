@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.imsit.schedule"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.imsit.schedule"
@@ -53,20 +53,22 @@ android {
 dependencies {
 
     implementation(libs.junit.jupiter)
+    implementation(libs.androidx.runtime.livedata)
 
     testImplementation(libs.core.ktx)
     testImplementation(libs.truth)
-    androidTestImplementation("androidx.work:work-testing:2.7.1")
-    testImplementation("androidx.test:core:1.2.7")
+    androidTestImplementation(libs.androidx.work.testing)
+    testImplementation(libs.androidx.core.v127)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation(libs.gson)
     implementation(libs.jsoup)
 
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.preference:preference-ktx:1.2.0")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
