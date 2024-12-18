@@ -15,7 +15,7 @@ class WebParser {
         private var doc: Document? = null
         private var groups: HashMap<String, HashMap<String, ArrayList<Group>>> = HashMap()
         private const val FULL_URL = "https://imsit.ru/timetable/stud/raspisan.html"
-        private var PATTERN_RUL = "https://imsit.ru/timetable/stud/"
+        private var PATTERN_URL = "https://imsit.ru/timetable/stud/"
 
         fun loadData(progress: (Int) -> Unit): HashMap<String, HashMap<String, ArrayList<Group>>> {
             doc = Network.connect(FULL_URL, TIMEOUT)
@@ -52,7 +52,7 @@ class WebParser {
                     if (!tableData[i].text().equals("")) {
 
                         // getting group schedule
-                        val schedule = Network.connect("$PATTERN_RUL$a", TIMEOUT)
+                        val schedule = Network.connect("$PATTERN_URL$a", TIMEOUT)
 
                         val weeks = DataClasses.Weeks(null, null)
 
