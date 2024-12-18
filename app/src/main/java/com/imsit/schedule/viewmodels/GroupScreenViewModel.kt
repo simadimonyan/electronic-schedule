@@ -139,7 +139,7 @@ class GroupScreenViewModel : ViewModel() {
                 _group.value = configuration.group
             }
         }
-        catch (_: Exception) {} // first start is always null
+        catch (_: Exception) {} // first start up is always null
     }
 
     fun toggleBottomSheet(toggle: Boolean) {
