@@ -21,6 +21,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,11 +31,17 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.imsit.schedule.R
+import com.imsit.schedule.ui.navigation.GroupScreen
+import com.imsit.schedule.ui.navigation.ScheduleScreen
+
 import com.imsit.schedule.ui.theme.buttons
 
 @Composable
-fun CustomAppBar() {
+fun CustomAppBar(navController: NavHostController) {
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     val image = 62.dp
@@ -90,7 +97,16 @@ fun CustomAppBar() {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { selectedIndex = 0 }
+                                onClick = {
+                                    selectedIndex = 0
+                                    navController.navigate(GroupScreen) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                     )
                     Spacer(modifier = Modifier.width(70.dp))
@@ -104,7 +120,16 @@ fun CustomAppBar() {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { selectedIndex = 1 }
+                                onClick = {
+                                    selectedIndex = 1
+                                    navController.navigate(ScheduleScreen) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                     )
                 }

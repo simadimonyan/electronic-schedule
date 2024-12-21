@@ -44,30 +44,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.imsit.schedule.R
 import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.ui.components.BottomSheet
 import com.imsit.schedule.ui.components.CustomAppBar
+import com.imsit.schedule.ui.navigation.AppNavGraph
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
 import com.imsit.schedule.viewmodels.GroupScreenViewModel
 import kotlinx.coroutines.launch
 
-@SuppressLint("MutableCollectionMutableState")
-@Preview
-@Composable
-fun SettingMain(viewModel: GroupScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-    val context = LocalContext.current
-    viewModel.restoreCache(context)
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchData(context)
-        viewModel.setupCacheUpdater(context)
-    }
+@SuppressLint("MutableCollectionMutableState")
+@Composable
+fun GroupScreen(
+    viewModel: GroupScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+) {
+    val context = LocalContext.current
 
     // ViewModel State
     val groups by viewModel.groups.collectAsState(HashMap())
@@ -114,7 +113,7 @@ fun MainFrame(
     selectedIndex: Int,
     onItemSelected: (Context, Int, String) -> Unit,
     setToggleBottomSheet: (Boolean) -> Unit,
-    setSelectedIndex: (Int) -> Unit
+    setSelectedIndex: (Int) -> Unit,
 ) {
 
     ScheduleTheme {
@@ -181,8 +180,6 @@ fun MainFrame(
                     }
                 }
 
-                // Navigation
-                CustomAppBar()
             }
         }
     }

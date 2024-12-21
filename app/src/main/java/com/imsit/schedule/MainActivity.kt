@@ -1,12 +1,16 @@
 package com.imsit.schedule
 
-import android.app.NotificationManager
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.imsit.schedule.ui.screens.SettingMain
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.imsit.schedule.ui.components.CustomAppBar
+import com.imsit.schedule.ui.navigation.AppNavGraph
+import com.imsit.schedule.viewmodels.GroupScreenViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -14,16 +18,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SettingMain()
+
+            val viewModel: GroupScreenViewModel = viewModel()
+            val context = LocalContext.current
+
+            LaunchedEffect(Unit) {
+                viewModel.restoreCache(context)
+                viewModel.fetchData(context)
+                viewModel.setupCacheUpdater(context)
+            }
+
+            val navController = rememberNavController()
+            AppNavGraph(navController = navController, viewModel)
+            CustomAppBar(navController)
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
-                as NotificationManager
-        notificationManager.cancel(2)
-    }
 }
 
 

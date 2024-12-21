@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    kotlin("plugin.serialization") version "1.9.10"
 }
 
 android {
@@ -39,7 +41,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     packaging {
         resources {
@@ -51,6 +53,16 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.animation)
+
+    implementation(libs.hilt.android)
+    annotationProcessor(libs.hilt.compiler)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestAnnotationProcessor(libs.hilt.compiler)
+    testImplementation(libs.hilt.android.testing)
+    androidTestAnnotationProcessor(libs.hilt.compiler)
 
     implementation(libs.junit.jupiter)
     implementation(libs.androidx.runtime.livedata)

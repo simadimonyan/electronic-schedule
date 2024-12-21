@@ -11,14 +11,25 @@ import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.domain.background.CacheUpdater
 import com.imsit.schedule.domain.notifications.NotificationsManager
 import com.imsit.schedule.domain.usecases.GetSchedule.Companion.getSchedule
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
+@HiltViewModel
 class GroupScreenViewModel : ViewModel() {
+
+    @ApplicationContext private lateinit var context: Context
+
+    override fun onCleared() {
+        super.onCleared()
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE)
+                as NotificationManager
+        notificationManager.cancel(2)
+    }
 
     private var _groups = MutableStateFlow<HashMap<String, HashMap<String, ArrayList<DataClasses.Group>>>>(HashMap())
     var groups: StateFlow<HashMap<String, HashMap<String, ArrayList<DataClasses.Group>>>> = _groups
@@ -69,7 +80,7 @@ class GroupScreenViewModel : ViewModel() {
                         _loading.value = true
                         _groups.value = loadedGroups
 
-                        cacheManager.saveGroupsToCache(_groups.value!!)
+                        cacheManager.saveGroupsToCache(_groups.value)
                         cacheManager.saveLastUpdatedTime(System.currentTimeMillis())
 
                         notificationsManager.cancelNotification(2, context)
@@ -79,7 +90,7 @@ class GroupScreenViewModel : ViewModel() {
 
                         _loading.value = true
                         _groups.value = cacheManager.loadGroupsFromCache()
-                        if (_groups.value!!.size > 1) {
+                        if (_groups.value.size > 1) {
                             _loading.value = false
                         }
                     }
