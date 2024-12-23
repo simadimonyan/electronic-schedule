@@ -1,7 +1,5 @@
 package com.imsit.schedule.data.models
 
-import com.imsit.schedule.R
-
 class DataClasses {
 
     data class Weeks(

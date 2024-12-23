@@ -53,6 +53,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.lottie.compose)
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)

@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.activity:activity:1.9.3@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-4/3ec255766286df1a38678ec7af1de798/transformed/activity-1.9.3/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/3ec255766286df1a38678ec7af1de798/transformed/activity-1.9.3/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/3ec255766286df1a38678ec7af1de798/transformed/activity-1.9.3/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-4/1fe4b8f5af2ea2450e0d13a5c9c35807/transformed/activity-1.9.3/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/1fe4b8f5af2ea2450e0d13a5c9c35807/transformed/activity-1.9.3/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/1fe4b8f5af2ea2450e0d13a5c9c35807/transformed/activity-1.9.3/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

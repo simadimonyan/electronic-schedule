@@ -82,7 +82,7 @@ class WebParser {
                                     val count = counts.select("td")[l].text().split("-")[0].toInt()
                                     val time: String = period.select("td")[l].text()
 
-                                    val regex = Regex("""^(пр\.|л\.|лаб\.)\s*(\D+(?:\s+\D+)*)\s+([А-ЯЁ][а-яё]+ [А-ЯЁ]\.[А-ЯЁ]\.)\s+(.+)$""")
+                                    val regex = Regex("""^(пр\.|л\.|лаб\.)\s*(\D+?)\s*([А-ЯЁ][а-яё]+ [А-ЯЁ]\.[А-ЯЁ]\.)?\s*(с/зал|[\d-]+(?:[а-яё]?)?)?${'$'}""")
                                     val match = regex.find(text)
 
                                     val type = match?.groups?.get(1)?.value // Type: пр., л., лаб.

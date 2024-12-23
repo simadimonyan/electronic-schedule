@@ -11,6 +11,7 @@ import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.domain.background.CacheUpdater
 import com.imsit.schedule.domain.notifications.NotificationsManager
 import com.imsit.schedule.domain.usecases.GetSchedule.Companion.getSchedule
+import com.imsit.schedule.domain.usecases.GetWeekCount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,9 +19,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @HiltViewModel
-class GroupScreenViewModel : ViewModel() {
+class MainViewModel : ViewModel() {
 
     @ApplicationContext private lateinit var context: Context
 
@@ -157,6 +161,57 @@ class GroupScreenViewModel : ViewModel() {
 
     fun toggleBottomSheet(toggle: Boolean) {
         _showBottomSheet.value = toggle
+    }
+
+    fun getWeekLessonsByGroup(): HashMap<Int, ArrayList<DataClasses.Lesson>>? {
+        val groups: java.util.ArrayList<DataClasses.Group>? =
+            _groups.value[_course.value]?.get(if (_group.value.contains("СПО")) "СПО"
+                else if (_group.value.contains("Мг")) "Магистратура"
+                else "Бакалавриат")
+
+        var chosenGroup: DataClasses.Group? = null
+        val count = GetWeekCount.calculateCount()
+
+        if (groups != null) {
+            for (group in groups.iterator()) {
+                if (group.group == _group.value) {
+                    chosenGroup = group
+                    break
+                }
+            }
+        }
+
+        if (chosenGroup != null) {
+            return if (count == 0) chosenGroup.lessons?.weekEven else chosenGroup.lessons?.weekOdd
+        }
+        return HashMap()
+    }
+
+    fun getTodayLessons(): ArrayList<DataClasses.Lesson> {
+        val week: HashMap<Int, ArrayList<DataClasses.Lesson>>? = getWeekLessonsByGroup()
+
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH)
+        val dayWeek = currentDate.format(formatter).uppercase()
+
+        if (week != null) {
+            for (day in week.keys) {
+                if (DataClasses.DayWeek.findById(day)?.name == dayWeek) {
+                    return week[day] as ArrayList<DataClasses.Lesson>
+                }
+            }
+        }
+        return ArrayList()
+    }
+
+    fun getTodayDate(): String {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale("RU"))
+        return currentDate.format(formatter).replaceFirstChar { it.uppercase() }
+    }
+
+    fun getTodayWeekCount(): Int {
+        return if (GetWeekCount.calculateCount() == 0) 2 else 1
     }
 
 }

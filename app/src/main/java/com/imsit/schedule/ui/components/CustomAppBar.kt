@@ -21,7 +21,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,7 +32,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.imsit.schedule.R
 import com.imsit.schedule.ui.navigation.GroupScreen
 import com.imsit.schedule.ui.navigation.ScheduleScreen
@@ -44,19 +42,45 @@ import com.imsit.schedule.ui.theme.buttons
 fun CustomAppBar(navController: NavHostController) {
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    val image = 62.dp
+    val imageSize = 62.dp
 
     val indicatorOffset by animateDpAsState(
-        targetValue = if (selectedIndex == 1) image else -image,
+        targetValue = if (selectedIndex == 1) imageSize else -imageSize,
         animationSpec = tween(durationMillis = 300),
         label = "indicatorOffset"
     )
+
+    val navigateToGroupScreen = {
+        if (selectedIndex != 0) {
+            selectedIndex = 0
+            navController.navigate(GroupScreen) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+    val navigateToScheduleScreen = {
+        if (selectedIndex != 1) {
+            selectedIndex = 1
+            navController.navigate(ScheduleScreen) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(60.dp, 0.dp, 60.dp, 55.dp)
+                .padding(60.dp, 0.dp, 60.dp, 30.dp)
                 .size(width = 0.dp, height = 80.dp),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 3.dp
@@ -87,6 +111,7 @@ fun CustomAppBar(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
+                    // Group
                     Image(
                         painter = painterResource(id = R.drawable.list),
                         contentDescription = "study",
@@ -97,19 +122,13 @@ fun CustomAppBar(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = {
-                                    selectedIndex = 0
-                                    navController.navigate(GroupScreen) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
+                                onClick = navigateToGroupScreen
                             )
                     )
+
                     Spacer(modifier = Modifier.width(70.dp))
+
+                    // Schedule
                     Image(
                         painter = painterResource(id = R.drawable.calendar),
                         contentDescription = "study",
@@ -120,16 +139,7 @@ fun CustomAppBar(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = {
-                                    selectedIndex = 1
-                                    navController.navigate(ScheduleScreen) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
+                                onClick = navigateToScheduleScreen
                             )
                     )
                 }
