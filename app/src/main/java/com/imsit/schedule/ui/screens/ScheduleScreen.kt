@@ -1,5 +1,6 @@
 package com.imsit.schedule.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,7 +25,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
@@ -44,14 +48,15 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.imsit.schedule.R
 import com.imsit.schedule.data.models.DataClasses
+import com.imsit.schedule.events.UIScheduleEvent
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
-import com.imsit.schedule.viewmodels.MainViewModel
+import com.imsit.schedule.viewmodels.ScheduleViewModel
 
 @Composable
 fun ScheduleScreen(
-    viewModel: MainViewModel = viewModel(),
+    viewModel: ScheduleViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
     ScheduleTheme {
@@ -87,7 +92,8 @@ fun SettingsButton(navController: NavHostController) {
 
         val navigationLink = {
             navController.navigate(com.imsit.schedule.ui.navigation.Settings) {
-                popUpTo(navController.graph.findStartDestination().id) {
+                popUpTo(navController.graph.findStartDestination().id
+                ) {
                     saveState = true
                 }
                 launchSingleTop = true
@@ -112,14 +118,17 @@ fun SettingsButton(navController: NavHostController) {
     }
 }
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
-fun WeekScheduleRender(viewModel: MainViewModel) {
-    val lessons: HashMap<Int, ArrayList<DataClasses.Lesson>>? = viewModel.getWeekLessonsByGroup()
+fun WeekScheduleRender(viewModel: ScheduleViewModel) {
+    viewModel.handleEvent(UIScheduleEvent.ShowWeekLessons)
+    val weekLessonsState by viewModel.weekLessons.collectAsState()
 }
 
 @Composable
-fun TodayScheduleRender(viewModel: MainViewModel) {
-    val lessons = remember { viewModel.getTodayLessons() }
+fun TodayScheduleRender(viewModel: ScheduleViewModel) {
+    viewModel.handleEvent(UIScheduleEvent.ShowTodayLessons)
+    val lessonsState by viewModel.todayLessons.collectAsState()
 
     Row(
         modifier = Modifier
@@ -135,7 +144,7 @@ fun TodayScheduleRender(viewModel: MainViewModel) {
         )
     }
 
-    if (lessons.isEmpty()) {
+    if (lessonsState.isEmpty()) {
         WeekendUnit()
     } else {
         LazyColumn(
@@ -143,7 +152,7 @@ fun TodayScheduleRender(viewModel: MainViewModel) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            itemsIndexed(lessons) { _, lesson ->
+            itemsIndexed(lessonsState) { _, lesson ->
                 ScheduleUnit(lesson = lesson)
             }
         }

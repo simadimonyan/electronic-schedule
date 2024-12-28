@@ -6,13 +6,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.imsit.schedule.ui.screens.GroupScreen
 import com.imsit.schedule.ui.screens.ScheduleScreen
 import com.imsit.schedule.ui.screens.Settings
-import com.imsit.schedule.viewmodels.MainViewModel
+import com.imsit.schedule.viewmodels.GroupsViewModel
+import com.imsit.schedule.viewmodels.ScheduleViewModel
+import com.imsit.schedule.viewmodels.SettingsViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -25,7 +28,7 @@ object ScheduleScreen
 object Settings
 
 @Composable
-fun AppNavGraph(navController: NavHostController, viewModel: MainViewModel) {
+fun AppNavGraph(navController: NavHostController) {
 
     NavHost(
         navController = navController,
@@ -45,7 +48,8 @@ fun AppNavGraph(navController: NavHostController, viewModel: MainViewModel) {
                 )
             }
         ) {
-            GroupScreen(viewModel)
+            val groupsModel: GroupsViewModel = hiltViewModel()
+            GroupScreen(groupsModel)
         }
         composable<ScheduleScreen>(
             enterTransition = {
@@ -61,7 +65,8 @@ fun AppNavGraph(navController: NavHostController, viewModel: MainViewModel) {
                 )
             }
         ){
-            ScheduleScreen(viewModel, navController)
+            val scheduleModel: ScheduleViewModel = hiltViewModel()
+            ScheduleScreen(scheduleModel, navController)
         }
         composable<Settings>(
             enterTransition = {
@@ -93,7 +98,8 @@ fun AppNavGraph(navController: NavHostController, viewModel: MainViewModel) {
                 )
             }
         ) {
-            Settings(viewModel, navController)
+            val settingsModel: SettingsViewModel = hiltViewModel()
+            Settings(settingsModel, navController)
         }
     }
 }

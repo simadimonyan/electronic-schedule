@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,26 +42,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.imsit.schedule.R
+import com.imsit.schedule.events.UIGroupEvent
 import com.imsit.schedule.ui.components.BottomSheet
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
-import com.imsit.schedule.viewmodels.MainViewModel
-
+import com.imsit.schedule.viewmodels.GroupsViewModel
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun GroupScreen(
-    viewModel: MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: GroupsViewModel = hiltViewModel()
 ) {
+    viewModel.handleEvent(UIGroupEvent.RestoreCache) //chosen parameters reveler
     MainFrame(viewModel)
 }
 
 @Composable
-fun MainFrame(viewModel: MainViewModel) {
+fun MainFrame(viewModel: GroupsViewModel) {
     val context = LocalContext.current
     val stateContext = remember { context }
+    val groupState by viewModel.groupState.collectAsState()
 
     ScheduleTheme {
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background) { innerPadding ->
@@ -82,7 +86,8 @@ fun MainFrame(viewModel: MainViewModel) {
                     text = LocalContext.current.getString(R.string.choose),
                     icon = R.drawable.logo,
                     onClick = {
-
+                        viewModel.handleEvent(UIGroupEvent.CreateSchedule)
+                        val result: Boolean = groupState.scheduleCreation
                     }
                 )
             }
@@ -91,57 +96,55 @@ fun MainFrame(viewModel: MainViewModel) {
 }
 
 @Composable
-fun Body(viewModel: MainViewModel) {
+fun Body(
+    viewModel: GroupsViewModel,
+) {
     val context = LocalContext.current
     val stateContext = remember { context }
 
-    val loading by viewModel.loading.collectAsState(true)
-    val progress by viewModel.progress.collectAsState(0)
-    val course by viewModel.course.collectAsState(context.getString(R.string.first_course))
-    val speciality by viewModel.speciality.collectAsState(context.getString(R.string.all_specialities))
-    val group by viewModel.group.collectAsState(context.getString(R.string.choose))
-    val showBottomSheet by viewModel.showBottomSheet.collectAsState(false)
-    val selectedIndex by viewModel.selectedIndex.collectAsState(0)
+    val loading by viewModel.shared.loading.collectAsState(true)
+    val progress by viewModel.shared.progress.collectAsState(0)
+    val groupState by viewModel.groupState.collectAsState()
 
     Column {
         CardContent(
             icon = R.drawable.study,
             title = stateContext.getString(R.string.course),
-            subtitle = course,
+            subtitle = groupState.course,
             onClick = {
-                viewModel.toggleBottomSheet(true)
-                viewModel.setSelectedIndex(0)
+                viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
+                viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(0))
             }
         )
 
         CardContent(
             icon = R.drawable.books,
             title = stateContext.getString(R.string.speciality),
-            subtitle = speciality,
+            subtitle = groupState.speciality,
             onClick = {
-                viewModel.toggleBottomSheet(true)
-                viewModel.setSelectedIndex(1)
+                viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
+                viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(1))
             }
         )
 
         CardContent(
             icon = R.drawable.people,
             title = stateContext.getString(R.string.group),
-            subtitle = group,
+            subtitle = groupState.group,
             onClick = {
-                viewModel.toggleBottomSheet(true)
-                viewModel.setSelectedIndex(2)
+                viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
+                viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(2))
             }
         )
     }
 
-    if (showBottomSheet) {
+    if (groupState.showBottomSheet) {
         BottomSheetContent(
             loading = loading,
             progress = progress,
             viewModel = viewModel,
-            selectedIndex = selectedIndex,
-            onDismiss = { viewModel.toggleBottomSheet(false) }
+            selectedIndex = groupState.selectedIndex,
+            onDismiss = { viewModel.handleEvent(UIGroupEvent.HideBottomSheet) }
         )
     }
 }
@@ -189,7 +192,7 @@ fun CardContent(icon: Int, title: String, subtitle: String, onClick: () -> Unit)
 fun BottomSheetContent(
     loading: Boolean,
     progress: Int,
-    viewModel: MainViewModel,
+    viewModel: GroupsViewModel,
     selectedIndex: Int,
     onDismiss: () -> Unit
 ) {
@@ -222,11 +225,11 @@ fun BottomSheetContent(
             Spacer(modifier = Modifier.height(20.dp))
         } else {
             BottomSheet(viewModel) { newValue ->
-                viewModel.onSelectItem(
-                    stateContext,
-                    selectedIndex,
-                    newValue
-                )
+                when (selectedIndex) {
+                    0 -> viewModel.handleEvent(UIGroupEvent.UpdateCourse(newValue))
+                    1 -> viewModel.handleEvent(UIGroupEvent.UpdateSpeciality(newValue))
+                    2 -> viewModel.handleEvent(UIGroupEvent.UpdateGroup(newValue))
+                }
                 onDismiss()
             }
         }

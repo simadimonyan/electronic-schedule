@@ -2,9 +2,7 @@ package com.imsit.schedule.ui.components
 
 import android.content.Context
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,23 +19,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.imsit.schedule.R
 import com.imsit.schedule.data.models.DataClasses
-import com.imsit.schedule.viewmodels.MainViewModel
+import com.imsit.schedule.viewmodels.GroupsViewModel
 
 @Composable
 fun BottomSheet(
-    viewModel: MainViewModel,
+    viewModel: GroupsViewModel,
     updateValue: (String) -> Unit,
 ) {
-    val context = LocalContext.current
-    val index by viewModel.selectedIndex.collectAsState(0)
-    val groups by viewModel.groups.collectAsState(HashMap())
-    val courseChosen by viewModel.course.collectAsState(context.getString(R.string.first_course))
-    val specialityChosen by viewModel.speciality.collectAsState(context.getString(R.string.all_specialities))
+    val groupState by viewModel.groupState.collectAsState()
+    val groups by viewModel.shared.groups.collectAsState()
 
-    when (index) {
+    when (groupState.selectedIndex) {
         0 -> GroupKeys(groups, updateValue)
-        1 -> SpecialityKeys(groups, courseChosen, updateValue)
-        else -> GroupListContent(groups, courseChosen, specialityChosen, updateValue)
+        1 -> SpecialityKeys(groups, groupState.course, updateValue)
+        else -> GroupListContent(groups, groupState.course, groupState.speciality, updateValue)
     }
 }
 

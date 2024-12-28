@@ -30,17 +30,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
-import com.imsit.schedule.viewmodels.MainViewModel
+import com.imsit.schedule.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(
-    viewModel: MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
     ScheduleTheme {
@@ -74,15 +75,15 @@ fun Settings(
             ) {
                 val checkedState = remember { mutableStateOf(false) }
                 val checkedState2 = remember { mutableStateOf(false) }
-                CardSettings(viewModel = viewModel, title = "Тестовая настройка", checkedState)
-                CardSettings(viewModel = viewModel, title = "Тестовая настройка 2", checkedState2)
+                CardSettings(title = "Тестовая настройка", checkedState)
+                CardSettings(title = "Тестовая настройка 2", checkedState2)
             }
         }
     }
 }
 
 @Composable
-fun CardSettings(viewModel: MainViewModel, title: String, checkedState: MutableState<Boolean>) {
+fun CardSettings(title: String, checkedState: MutableState<Boolean>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
