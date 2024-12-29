@@ -21,7 +21,7 @@
             android:exported="true"
             android:theme="@style/Theme.Schedule"
             android:screenOrientation="sensorPortrait"
-            tools:ignore="DiscouragedApi,LockedOrientationActivity">
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

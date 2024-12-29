@@ -121,13 +121,17 @@ fun SettingsButton(navController: NavHostController) {
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun WeekScheduleRender(viewModel: ScheduleViewModel) {
-    viewModel.handleEvent(UIScheduleEvent.ShowWeekLessons)
+    LaunchedEffect(Unit) {
+        viewModel.handleEvent(UIScheduleEvent.ShowWeekLessons)
+    }
     val weekLessonsState by viewModel.weekLessons.collectAsState()
 }
 
 @Composable
 fun TodayScheduleRender(viewModel: ScheduleViewModel) {
-    viewModel.handleEvent(UIScheduleEvent.ShowTodayLessons)
+    LaunchedEffect(Unit) {
+        viewModel.handleEvent(UIScheduleEvent.ShowTodayLessons)
+    }
     val lessonsState by viewModel.todayLessons.collectAsState()
 
     Row(

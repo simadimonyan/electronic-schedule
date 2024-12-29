@@ -1,6 +1,5 @@
 package com.imsit.schedule.ui.components
 
-import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,14 +10,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.imsit.schedule.R
-import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.viewmodels.GroupsViewModel
 
 @Composable
@@ -27,22 +24,21 @@ fun BottomSheet(
     updateValue: (String) -> Unit,
 ) {
     val groupState by viewModel.groupState.collectAsState()
-    val groups by viewModel.shared.groups.collectAsState()
 
     when (groupState.selectedIndex) {
-        0 -> GroupKeys(groups, updateValue)
-        1 -> SpecialityKeys(groups, groupState.course, updateValue)
-        else -> GroupListContent(groups, groupState.course, groupState.speciality, updateValue)
+        0 -> CourseKeys(groupState.coursesToDisplay, updateValue)
+        1 -> SpecialityKeys(groupState.specialitiesToDisplay, updateValue)
+        else -> GroupListContent(groupState.groupsToDisplay, updateValue)
     }
 }
 
 @Composable
-fun GroupKeys(
-    groups: Map<String, Map<String, List<DataClasses.Group>>>,
+fun CourseKeys(
+    coursesToDisplay: List<String>,
     updateValue: (String) -> Unit
 ) {
-    groups.keys.forEachIndexed { index, key ->
-        if (groups[key]?.isEmpty() == true) return@forEachIndexed
+    coursesToDisplay.forEachIndexed { index, key ->
+        if (coursesToDisplay.isEmpty()) return@forEachIndexed
 
         if (index != 0) {
             HorizontalDivider(
@@ -65,11 +61,10 @@ fun GroupKeys(
 
 @Composable
 fun SpecialityKeys(
-    groups: Map<String, Map<String, List<DataClasses.Group>>>,
-    courseChosen: String,
+    specialitiesToDisplay: List<String>,
     updateValue: (String) -> Unit
 ) {
-    groups[courseChosen]?.keys?.forEachIndexed { index, speciality ->
+    specialitiesToDisplay.forEachIndexed { index, speciality ->
         if (index != 0) {
             HorizontalDivider(
                 thickness = 0.5.dp,
@@ -105,23 +100,12 @@ fun SpecialityKeys(
 
 @Composable
 fun GroupListContent(
-    groups: Map<String, Map<String, List<DataClasses.Group>>>,
-    courseChosen: String,
-    specialityChosen: String,
+    groupsToDisplay: List<String>,
     updateValue: (String) -> Unit
 ) {
-    val context: Context = LocalContext.current
-    val groupsToDisplay = remember(courseChosen, specialityChosen) {
-        if (specialityChosen != context.getString(R.string.all_specialities)) {
-            groups[courseChosen]?.get(specialityChosen)
-        } else {
-            groups[courseChosen]?.values?.flatten()
-        }
-    }
-
-    groupsToDisplay?.let {
+    groupsToDisplay.let {
         LazyColumn {
-            itemsIndexed(it, key = { _, group -> group.group }) { index, group ->
+            itemsIndexed(it, key = { _, group -> group }) { index, group ->
                 if (index != 0) {
                     HorizontalDivider(
                         thickness = 0.5.dp,
@@ -130,11 +114,11 @@ fun GroupListContent(
                 }
 
                 Text(
-                    text = group.group,
+                    text = group,
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxWidth()
-                        .clickable { updateValue(group.group) },
+                        .clickable { updateValue(group) },
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp
                 )

@@ -13,9 +13,6 @@ import androidx.navigation.compose.composable
 import com.imsit.schedule.ui.screens.GroupScreen
 import com.imsit.schedule.ui.screens.ScheduleScreen
 import com.imsit.schedule.ui.screens.Settings
-import com.imsit.schedule.viewmodels.GroupsViewModel
-import com.imsit.schedule.viewmodels.ScheduleViewModel
-import com.imsit.schedule.viewmodels.SettingsViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -48,8 +45,7 @@ fun AppNavGraph(navController: NavHostController) {
                 )
             }
         ) {
-            val groupsModel: GroupsViewModel = hiltViewModel()
-            GroupScreen(groupsModel)
+            GroupScreen(hiltViewModel())
         }
         composable<ScheduleScreen>(
             enterTransition = {
@@ -65,8 +61,7 @@ fun AppNavGraph(navController: NavHostController) {
                 )
             }
         ){
-            val scheduleModel: ScheduleViewModel = hiltViewModel()
-            ScheduleScreen(scheduleModel, navController)
+            ScheduleScreen(hiltViewModel(), navController)
         }
         composable<Settings>(
             enterTransition = {
@@ -98,8 +93,7 @@ fun AppNavGraph(navController: NavHostController) {
                 )
             }
         ) {
-            val settingsModel: SettingsViewModel = hiltViewModel()
-            Settings(settingsModel, navController)
+            Settings(hiltViewModel(), navController)
         }
     }
 }

@@ -33,7 +33,9 @@ class GroupsViewModel @Inject constructor(
         val showBottomSheet: Boolean = false,
         val selectedIndex: Int = 0,
         val scheduleCreation: Boolean = false,
-        val groupsToDisplay: List<DataClasses.Group> = ArrayList()
+        val coursesToDisplay: List<String> = ArrayList(),
+        val specialitiesToDisplay: List<String> = ArrayList(),
+        val groupsToDisplay: List<String> = ArrayList()
     )
 
     fun handleEvent(event: UIGroupEvent) {
@@ -47,6 +49,8 @@ class GroupsViewModel @Inject constructor(
             is UIGroupEvent.RestoreCache -> restoreCache()
             is UIGroupEvent.CreateSchedule -> createSchedule()
             is UIGroupEvent.DisplayGroups -> displayGroups(event.course, event.speciality)
+            is UIGroupEvent.DisplayCourses -> displayCourses()
+            is UIGroupEvent.DisplaySpecialities -> displaySpecialities(event.course)
         }
     }
 
@@ -66,50 +70,46 @@ class GroupsViewModel @Inject constructor(
         }
     }
 
-    private fun updateCourse(course: String) {
+    private fun displaySpecialities(course: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                _groupState.update { it.copy(course = course) }
-                updateSpeciality(resources.getString(R.string.all_specialities))
-                updateGroup(resources.getString(R.string.choose))
-                updateCache()
+                _groupState.update { it.copy(specialitiesToDisplay = getSpecialitiesToDisplay(course)) }
             }
         }
+    }
+
+    private fun displayCourses() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _groupState.update { it.copy(coursesToDisplay = getCoursesToDisplay()) }
+            }
+        }
+    }
+
+    private fun updateCourse(course: String) {
+        _groupState.update { it.copy(course = course) }
+        updateSpeciality(resources.getString(R.string.all_specialities))
+        updateGroup(resources.getString(R.string.choose))
+        updateCache()
     }
 
     private fun updateSpeciality(speciality: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _groupState.update { it.copy(speciality = speciality) }
-                updateGroup(resources.getString(R.string.choose))
-                updateCache()
-            }
-        }
+        _groupState.update { it.copy(speciality = speciality) }
+        updateGroup(resources.getString(R.string.choose))
+        updateCache()
     }
 
     private fun updateGroup(group: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _groupState.update { it.copy(group = group) }
-                updateCache()
-            }
-        }
+        _groupState.update { it.copy(group = group) }
+        updateCache()
     }
 
     private fun setSelectedIndex(index: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _groupState.update { it.copy(selectedIndex = index) }
-            }
-        }
+        _groupState.update { it.copy(selectedIndex = index) }
     }
 
     private fun toggleBottomSheet(toggle: Boolean) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _groupState.update { it.copy(showBottomSheet = toggle) }
-            }
-        }
+        _groupState.update { it.copy(showBottomSheet = toggle) }
     }
 
     private fun restoreCache() {
@@ -144,27 +144,35 @@ class GroupsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getGroupsToDisplay(courseChosen: String, specialityChosen: String): List<DataClasses.Group> {
+    private suspend fun getCoursesToDisplay(): List<String> {
+        return withContext(Dispatchers.IO) {
+            shared.groups.value.keys.toList()
+        }
+    }
+
+    private suspend fun getSpecialitiesToDisplay(courseChosen: String): List<String> {
+        return withContext(Dispatchers.IO) {
+            shared.groups.value[courseChosen]?.keys?.toList().orEmpty()
+        }
+    }
+
+    private suspend fun getGroupsToDisplay(courseChosen: String, specialityChosen: String): List<String> {
         return withContext(Dispatchers.IO) {
             if (specialityChosen != "Все специальности") {
-                return@withContext shared.groups.value[courseChosen]?.get(specialityChosen).orEmpty()
+                shared.groups.value[courseChosen]?.get(specialityChosen)?.map { it.group }.orEmpty()
             } else {
-                return@withContext shared.groups.value[courseChosen]?.values?.flatten().orEmpty()
+                shared.groups.value[courseChosen]?.values?.flatten()?.map { it.group }.orEmpty()
             }
         }
     }
 
     private fun updateCache() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val cacheManager = CacheManager(resources.getContext())
-                val configuration = CacheManager.Configuration(
-                    _groupState.value.course,
-                    _groupState.value.speciality,
-                    _groupState.value.group
-                )
-                cacheManager.saveActualConfiguration(configuration)
-            }
-        }
+        val cacheManager = CacheManager(resources.getContext())
+        val configuration = CacheManager.Configuration(
+            _groupState.value.course,
+            _groupState.value.speciality,
+            _groupState.value.group
+        )
+        cacheManager.saveActualConfiguration(configuration)
     }
 }

@@ -56,7 +56,9 @@ import com.imsit.schedule.viewmodels.GroupsViewModel
 fun GroupScreen(
     viewModel: GroupsViewModel = hiltViewModel()
 ) {
-    viewModel.handleEvent(UIGroupEvent.RestoreCache) //chosen parameters reveler
+    LaunchedEffect(Unit) {
+        viewModel.handleEvent(UIGroupEvent.RestoreCache) //chosen parameters reveler
+    }
     MainFrame(viewModel)
 }
 
@@ -112,6 +114,7 @@ fun Body(
             title = stateContext.getString(R.string.course),
             subtitle = groupState.course,
             onClick = {
+                viewModel.handleEvent(UIGroupEvent.DisplayCourses)
                 viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
                 viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(0))
             }
@@ -122,6 +125,7 @@ fun Body(
             title = stateContext.getString(R.string.speciality),
             subtitle = groupState.speciality,
             onClick = {
+                viewModel.handleEvent(UIGroupEvent.DisplaySpecialities(groupState.course))
                 viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
                 viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(1))
             }
@@ -132,6 +136,7 @@ fun Body(
             title = stateContext.getString(R.string.group),
             subtitle = groupState.group,
             onClick = {
+                viewModel.handleEvent(UIGroupEvent.DisplayGroups(groupState.course, groupState.speciality))
                 viewModel.handleEvent(UIGroupEvent.ShowBottomSheet)
                 viewModel.handleEvent(UIGroupEvent.SetSelectedIndex(2))
             }
