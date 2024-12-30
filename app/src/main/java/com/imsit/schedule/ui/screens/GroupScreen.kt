@@ -85,7 +85,7 @@ fun MainFrame(viewModel: GroupsViewModel) {
                 Body(viewModel)
 
                 ActionButton(
-                    text = LocalContext.current.getString(R.string.choose),
+                    text = stateContext.getString(R.string.choose),
                     icon = R.drawable.logo,
                     onClick = {
                         viewModel.handleEvent(UIGroupEvent.CreateSchedule)
@@ -122,7 +122,7 @@ fun Body(
 
         CardContent(
             icon = R.drawable.books,
-            title = stateContext.getString(R.string.speciality),
+            title = context.getString(R.string.speciality),
             subtitle = groupState.speciality,
             onClick = {
                 viewModel.handleEvent(UIGroupEvent.DisplaySpecialities(groupState.course))
@@ -202,23 +202,25 @@ fun BottomSheetContent(
     onDismiss: () -> Unit
 ) {
     val context: Context = LocalContext.current
-    val stateContext = remember { context }
     val animatedProgress = animateFloatAsState(targetValue = progress / 100f, label = "progress")
 
     ModalBottomSheet(
         modifier = Modifier.wrapContentHeight(),
         sheetState = rememberModalBottomSheetState(),
         shape = RoundedCornerShape(17.dp),
+        contentColor = Color.White,
+        containerColor = Color.White,
         onDismissRequest = onDismiss
     ) {
         if (loading) {
             Text(
-                text = stateContext.getString(R.string.update_data),
+                text = context.getString(R.string.update_data),
                 modifier = Modifier
                     .padding(10.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                fontSize = 17.sp
+                fontSize = 17.sp,
+                color = Color.Black
             )
 
             LinearProgressIndicator(
@@ -226,6 +228,8 @@ fun BottomSheetContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(50.dp, 10.dp),
+                color = buttons,
+                trackColor = background
             )
             Spacer(modifier = Modifier.height(20.dp))
         } else {
@@ -265,7 +269,7 @@ fun ActionButton(text: String, icon: Int, onClick: () -> Unit) {
                 modifier = Modifier.size(35.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = text, Modifier.padding(0.dp, 7.dp))
+            Text(text = text, Modifier.padding(0.dp, 7.dp), color = Color.White)
         }
     }
 }

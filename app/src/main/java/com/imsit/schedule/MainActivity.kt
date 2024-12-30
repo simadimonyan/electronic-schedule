@@ -1,24 +1,18 @@
 package com.imsit.schedule
 
 import android.app.Application
-import android.app.NotificationManager
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
+import android.os.StrictMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import com.imsit.schedule.di.ResourceManager
 import com.imsit.schedule.events.DataEvent
 import com.imsit.schedule.ui.components.CustomAppBar
 import com.imsit.schedule.ui.navigation.AppNavGraph
@@ -26,7 +20,6 @@ import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
 
 @HiltAndroidApp
 class App : Application()
@@ -51,7 +44,7 @@ class MainActivity : ComponentActivity() {
                 .fillMaxSize()
                 .background(background)) {
                 AppNavGraph(navController = navController)
-                CustomAppBar(navController)
+                CustomAppBar(viewModel, navController)
             }
         }
     }

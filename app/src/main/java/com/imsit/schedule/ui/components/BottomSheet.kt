@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,7 +44,8 @@ fun CourseKeys(
         if (index != 0) {
             HorizontalDivider(
                 thickness = 0.5.dp,
-                modifier = Modifier.padding(25.dp, 0.dp)
+                modifier = Modifier.padding(25.dp, 0.dp),
+                color = Color.LightGray
             )
         }
 
@@ -54,7 +56,8 @@ fun CourseKeys(
                 .fillMaxWidth()
                 .clickable { updateValue(key) },
             textAlign = TextAlign.Center,
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            color = Color.Black
         )
     }
 }
@@ -68,7 +71,8 @@ fun SpecialityKeys(
         if (index != 0) {
             HorizontalDivider(
                 thickness = 0.5.dp,
-                modifier = Modifier.padding(25.dp, 0.dp)
+                modifier = Modifier.padding(25.dp, 0.dp),
+                color = Color.LightGray
             )
         }
 
@@ -79,13 +83,15 @@ fun SpecialityKeys(
                 .fillMaxWidth()
                 .clickable { updateValue(speciality) },
             textAlign = TextAlign.Center,
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            color = Color.Black
         )
     }
 
     HorizontalDivider(
         thickness = 0.5.dp,
-        modifier = Modifier.padding(25.dp, 0.dp)
+        modifier = Modifier.padding(25.dp, 0.dp),
+        color = Color.LightGray
     )
     Text(
         text = LocalContext.current.getString(R.string.all_specialities),
@@ -94,7 +100,8 @@ fun SpecialityKeys(
             .fillMaxWidth()
             .clickable { updateValue("Все специальности") },
         textAlign = TextAlign.Center,
-        fontSize = 20.sp
+        fontSize = 20.sp,
+        color = Color.Black
     )
 }
 
@@ -109,7 +116,8 @@ fun GroupListContent(
                 if (index != 0) {
                     HorizontalDivider(
                         thickness = 0.5.dp,
-                        modifier = Modifier.padding(25.dp, 0.dp)
+                        modifier = Modifier.padding(25.dp, 0.dp),
+                        color = Color.LightGray
                     )
                 }
 
@@ -120,7 +128,8 @@ fun GroupListContent(
                         .fillMaxWidth()
                         .clickable { updateValue(group) },
                     textAlign = TextAlign.Center,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    color = Color.Black
                 )
             }
         }

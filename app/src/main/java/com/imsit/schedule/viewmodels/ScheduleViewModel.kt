@@ -29,6 +29,9 @@ class ScheduleViewModel @Inject constructor(
     private val _todayLessons = MutableStateFlow<ArrayList<DataClasses.Lesson>>(ArrayList())
     val todayLessons: StateFlow<ArrayList<DataClasses.Lesson>> = _todayLessons
 
+    private val _today = MutableStateFlow("")
+    val today: StateFlow<String> = _today
+
     private val _weekLessons = MutableStateFlow<HashMap<Int, ArrayList<DataClasses.Lesson>>>(HashMap())
     val weekLessons: StateFlow<HashMap<Int, ArrayList<DataClasses.Lesson>>> = _weekLessons
 
@@ -36,6 +39,7 @@ class ScheduleViewModel @Inject constructor(
         when(event) {
             is UIScheduleEvent.ShowWeekLessons -> showWeekLessons()
             is UIScheduleEvent.ShowTodayLessons -> showTodayLessons()
+            is UIScheduleEvent.ShowDateToday -> showDateToday()
         }
     }
 
@@ -43,6 +47,14 @@ class ScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 _todayLessons.update { getTodayLessons() }
+            }
+        }
+    }
+
+    private fun showDateToday() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _today.update { getTodayDate() }
             }
         }
     }
@@ -108,15 +120,17 @@ class ScheduleViewModel @Inject constructor(
         }
     }
 
-    fun getTodayDate(): String {
-        val currentDate = LocalDate.now()
-        val formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale("RU"))
-        return currentDate.format(formatter).replaceFirstChar { it.uppercase() }
+    suspend fun getTodayDate(): String {
+        return withContext(Dispatchers.IO) {
+            val currentDate = LocalDate.now()
+            val formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale("RU"))
+            return@withContext currentDate.format(formatter).replaceFirstChar { it.uppercase() }
+        }
     }
 
-    fun getTodayWeekCount(): Int {
-        return if (GetWeekCount.calculateCount() == 0) 2 else 1
-    }
+//    fun getTodayWeekCount(): Int {
+//        return if (GetWeekCount.calculateCount() == 0) 2 else 1
+//    }
 
 }
 

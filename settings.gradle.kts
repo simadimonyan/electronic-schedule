@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Schedule"
 include(":app")
+include(":baselineprofile")

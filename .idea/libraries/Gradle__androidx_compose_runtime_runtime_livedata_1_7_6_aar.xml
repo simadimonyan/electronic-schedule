@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.compose.runtime:runtime-livedata:1.7.6@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/d027dd8a8344a65ae4eb729247d0921a/transformed/runtime-livedata-1.7.6/AndroidManifest.xml" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/d027dd8a8344a65ae4eb729247d0921a/transformed/runtime-livedata-1.7.6/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-4/d027dd8a8344a65ae4eb729247d0921a/transformed/runtime-livedata-1.7.6/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-4/57f7f24e9d5e85507ea75803a172516d/transformed/runtime-livedata-1.7.6/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/57f7f24e9d5e85507ea75803a172516d/transformed/runtime-livedata-1.7.6/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-4/57f7f24e9d5e85507ea75803a172516d/transformed/runtime-livedata-1.7.6/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

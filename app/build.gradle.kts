@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.baselineprofile)
 }
 
 android {
@@ -25,7 +26,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false //R8 compiler
+            isMinifyEnabled = true //R8 compiler
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -64,6 +65,8 @@ dependencies {
     implementation(libs.androidx.animation)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":baselineprofile"))
     kapt(libs.hilt.android.compiler)
     //implementation(libs.androidx.hilt.lifecycle.viewmodel)
     implementation(libs.androidx.hilt.navigation.compose.v120)
@@ -92,7 +95,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
     androidTestImplementation(libs.androidx.junit)

@@ -48,7 +48,7 @@ fun Settings(
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background,
             topBar = {
                 TopAppBar(
-                    title = { Text("Настройки") },
+                    title = { Text("Настройки", color = Color.Black) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = background
                     ),
@@ -62,7 +62,7 @@ fun Settings(
                                 restoreState = true
                             }
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
                         }
                     }
                 )

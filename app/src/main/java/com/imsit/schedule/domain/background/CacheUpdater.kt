@@ -34,10 +34,11 @@ class CacheUpdater {
             }
         }
 
-        fun setupPeriodicWork(context: Context, lastUpdateTime: Long) {
-            val delay = calculateDelayUntilNextUpdate(lastUpdateTime)
+        fun setupPeriodicWork(context: Context) {
+            val delay = calculateDelayUntilNextUpdate(CacheManager(context).getLastUpdatedTime())
 
-            val periodicWorkRequest = PeriodicWorkRequestBuilder<GroupSyncWorker>(delay, TimeUnit.MILLISECONDS)
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<GroupSyncWorker>(1, TimeUnit.DAYS)
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)

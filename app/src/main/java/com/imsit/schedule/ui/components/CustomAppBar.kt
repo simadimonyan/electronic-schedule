@@ -30,16 +30,22 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.imsit.schedule.R
+import com.imsit.schedule.events.DataEvent
 import com.imsit.schedule.ui.navigation.GroupScreen
 import com.imsit.schedule.ui.navigation.ScheduleScreen
 
 import com.imsit.schedule.ui.theme.buttons
+import com.imsit.schedule.viewmodels.MainViewModel
 
 @Composable
-fun CustomAppBar(navController: NavHostController) {
+fun CustomAppBar(
+    viewModel: MainViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     val imageSize = 62.dp
@@ -53,13 +59,7 @@ fun CustomAppBar(navController: NavHostController) {
     val navigateToGroupScreen = {
         if (selectedIndex != 0) {
             selectedIndex = 0
-            navController.navigate(GroupScreen) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
+            navController.popBackStack()
         }
     }
 
@@ -71,7 +71,7 @@ fun CustomAppBar(navController: NavHostController) {
                     saveState = true
                 }
                 launchSingleTop = true
-                restoreState = true
+               restoreState = true
             }
         }
     }

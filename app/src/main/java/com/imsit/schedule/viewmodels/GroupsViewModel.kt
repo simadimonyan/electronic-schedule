@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.imsit.schedule.R
 import com.imsit.schedule.data.cache.CacheManager
-import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.di.ResourceManager
 import com.imsit.schedule.di.SharedStateRepository
 import com.imsit.schedule.events.UIGroupEvent
@@ -113,22 +112,18 @@ class GroupsViewModel @Inject constructor(
     }
 
     private fun restoreCache() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    val cacheManager = CacheManager(resources.getContext())
-                    val configuration = cacheManager.loadLastConfiguration()
-                    if (configuration.group.isNotEmpty()) {
-                        _groupState.update { it.copy(
-                            course = configuration.course,
-                            speciality = configuration.speciality,
-                            group = configuration.group
-                        )}
-                    }
-                } catch (e: Exception) {
-                    // first-time setup or empty cache case
-                }
+        try {
+            val cacheManager = CacheManager(resources.getContext())
+            val configuration = cacheManager.loadLastConfiguration()
+            if (configuration.group.isNotEmpty()) {
+                _groupState.update { it.copy(
+                    course = configuration.course,
+                    speciality = configuration.speciality,
+                    group = configuration.group
+                )}
             }
+        } catch (e: Exception) {
+            // first-time setup or empty cache case
         }
     }
 

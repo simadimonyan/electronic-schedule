@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.imsit.schedule.R
 import com.imsit.schedule.data.cache.CacheManager
 import com.imsit.schedule.domain.background.CacheUpdater
@@ -17,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Objects
 import javax.inject.Inject
 
 @HiltViewModel
@@ -88,12 +90,22 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun navigate(navController: NavController, destination: Any) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                navController.navigate(destination) {
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        }
+    }
+
     private fun setupCacheUpdater() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val context = resources.getContext()
-                val cacheManager = CacheManager(context)
-                CacheUpdater.setupPeriodicWork(context, cacheManager.getLastUpdatedTime())
+                CacheUpdater.setupPeriodicWork(context)
             }
         }
     }
