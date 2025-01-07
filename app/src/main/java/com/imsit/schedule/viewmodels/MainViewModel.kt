@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.imsit.schedule.R
 import com.imsit.schedule.data.cache.CacheManager
 import com.imsit.schedule.domain.background.CacheUpdater
@@ -18,13 +17,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Objects
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val resources: ResourceManager,
-    private val shared: SharedStateRepository
+    val shared: SharedStateRepository
 ) : ViewModel() {
 
     fun handleEvent(event: DataEvent) {
@@ -35,6 +33,7 @@ class MainViewModel @Inject constructor(
             is DataEvent.UpdateLoading -> shared.updateLoading(event.isLoading)
             is DataEvent.UpdateProgress -> shared.updateProgress(event.progress)
             is DataEvent.LoadGroups -> shared.loadGroups(event.newGroups)
+            is DataEvent.RestoreCache -> restoreCache()
         }
     }
 
@@ -90,17 +89,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun navigate(navController: NavController, destination: Any) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                navController.navigate(destination) {
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }
-        }
-    }
-
     private fun setupCacheUpdater() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -119,4 +107,22 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    // global app restore
+    // in main thread only | to avoid delay of loading
+    private fun restoreCache() {
+        try {
+            val cacheManager = CacheManager(resources.getContext())
+            val configuration = cacheManager.loadLastConfiguration()
+
+            if (configuration.group.isNotEmpty()) {
+                shared.updateCourse(configuration.course)
+                shared.updateSpeciality(configuration.speciality)
+                shared.updateGroup(configuration.group)
+            }
+        } catch (e: Exception) {
+            // first-time setup or empty cache case
+        }
+    }
+
 }

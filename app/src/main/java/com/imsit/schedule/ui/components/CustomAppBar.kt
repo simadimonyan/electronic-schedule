@@ -19,10 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,23 +29,21 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.imsit.schedule.R
-import com.imsit.schedule.events.DataEvent
 import com.imsit.schedule.ui.navigation.GroupScreen
 import com.imsit.schedule.ui.navigation.ScheduleScreen
 
 import com.imsit.schedule.ui.theme.buttons
-import com.imsit.schedule.viewmodels.MainViewModel
+import com.imsit.schedule.viewmodels.GroupsViewModel
 
 @Composable
 fun CustomAppBar(
-    viewModel: MainViewModel = hiltViewModel(),
+    viewModel: GroupsViewModel,
     navController: NavHostController
 ) {
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    val selectedIndex by viewModel.shared.screenIndex.collectAsState()
 
     val imageSize = 62.dp
 
@@ -58,14 +55,20 @@ fun CustomAppBar(
 
     val navigateToGroupScreen = {
         if (selectedIndex != 0) {
-            selectedIndex = 0
-            navController.popBackStack()
+            viewModel.shared.updateIndex(0)
+            navController.navigate(GroupScreen) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
 
     val navigateToScheduleScreen = {
         if (selectedIndex != 1) {
-            selectedIndex = 1
+            viewModel.shared.updateIndex(1)
             navController.navigate(ScheduleScreen) {
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true

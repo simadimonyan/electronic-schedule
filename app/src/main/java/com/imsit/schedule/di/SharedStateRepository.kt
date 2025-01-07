@@ -10,6 +10,15 @@ import javax.inject.Singleton
 @Singleton
 class SharedStateRepository @Inject constructor() {
 
+    // ---------- Screen UI ----------
+
+    private val _screenIndex = MutableStateFlow(0)
+    val screenIndex: StateFlow<Int> = _screenIndex
+
+    fun updateIndex(index: Int) {
+        _screenIndex.update { index }
+    }
+
     // ---------- Group Preferences ----------
 
     private val _course = MutableStateFlow("1 курс")
@@ -58,5 +67,18 @@ class SharedStateRepository @Inject constructor() {
 
     // ---------- Settings ----------
 
+    private val _navigationInvisibility = MutableStateFlow(false)
+    val navigationInvisibility: StateFlow<Boolean> = _navigationInvisibility
+
+    private val _scheduleFullWeek = MutableStateFlow(false)
+    val scheduleFullWeek: StateFlow<Boolean> = _scheduleFullWeek
+
+    fun updateFullWeek(isFull: Boolean) {
+        _scheduleFullWeek.update { isFull }
+    }
+
+    fun updateNavInvisibility(isVisible: Boolean) {
+        _navigationInvisibility.update { isVisible }
+    }
 
 }

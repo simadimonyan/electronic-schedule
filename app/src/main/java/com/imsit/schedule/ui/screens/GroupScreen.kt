@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -28,10 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,36 +42,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.imsit.schedule.R
 import com.imsit.schedule.events.UIGroupEvent
 import com.imsit.schedule.ui.components.BottomSheet
+import com.imsit.schedule.ui.components.CustomAppBar
+import com.imsit.schedule.ui.navigation.AddNavGraph
+import com.imsit.schedule.ui.navigation.AppNavGraph
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
 import com.imsit.schedule.viewmodels.GroupsViewModel
+import com.imsit.schedule.viewmodels.MainViewModel
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun GroupScreen(
     viewModel: GroupsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.handleEvent(UIGroupEvent.RestoreCache) //chosen parameters reveler
-    }
     MainFrame(viewModel)
 }
 
 @Composable
 fun MainFrame(viewModel: GroupsViewModel) {
     val context = LocalContext.current
-    val stateContext = remember { context }
     val groupState by viewModel.groupState.collectAsState()
 
     ScheduleTheme {
         Scaffold(modifier = Modifier.fillMaxSize(), containerColor = background) { innerPadding ->
             Column(modifier = Modifier.fillMaxHeight()) {
                 Text(
-                    stateContext.getString(R.string.choose_group),
+                    context.getString(R.string.choose_group),
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxWidth()
@@ -85,7 +85,7 @@ fun MainFrame(viewModel: GroupsViewModel) {
                 Body(viewModel)
 
                 ActionButton(
-                    text = stateContext.getString(R.string.choose),
+                    text = context.getString(R.string.choose),
                     icon = R.drawable.logo,
                     onClick = {
                         viewModel.handleEvent(UIGroupEvent.CreateSchedule)
@@ -102,7 +102,6 @@ fun Body(
     viewModel: GroupsViewModel,
 ) {
     val context = LocalContext.current
-    val stateContext = remember { context }
 
     val loading by viewModel.shared.loading.collectAsState(true)
     val progress by viewModel.shared.progress.collectAsState(0)
@@ -111,7 +110,7 @@ fun Body(
     Column {
         CardContent(
             icon = R.drawable.study,
-            title = stateContext.getString(R.string.course),
+            title = context.getString(R.string.course),
             subtitle = groupState.course,
             onClick = {
                 viewModel.handleEvent(UIGroupEvent.DisplayCourses)
@@ -133,7 +132,7 @@ fun Body(
 
         CardContent(
             icon = R.drawable.people,
-            title = stateContext.getString(R.string.group),
+            title = context.getString(R.string.group),
             subtitle = groupState.group,
             onClick = {
                 viewModel.handleEvent(UIGroupEvent.DisplayGroups(groupState.course, groupState.speciality))
@@ -210,6 +209,7 @@ fun BottomSheetContent(
         shape = RoundedCornerShape(17.dp),
         contentColor = Color.White,
         containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Black) },
         onDismissRequest = onDismiss
     ) {
         if (loading) {

@@ -13,9 +13,32 @@ class CacheManager(context: Context) {
     private val lastUpdatedKey = "last_updated_time"
     private val groupsCacheKey = "groups_cache"
     private val chosenConfigurationKey = "chosen_configuration"
+    private val settingsConfKey = "settings_configuration"
     private val cacheExpiryTime = 24 * 60 * 60 * 1000 // milliseconds
 
     data class Configuration(val course: String, val speciality: String, val group: String)
+
+    data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean)
+
+    fun loadLastSettings(): Settings {
+        val json = preferences.getString(settingsConfKey, null)
+
+        val type = object : TypeToken<Settings>() {}.type
+
+        val value = try {
+            gson.fromJson(json, type)
+        }
+        catch (e: Exception) {
+            Settings(fullWeek = false, isNavInvisible = false)
+        }
+
+        return value
+    }
+
+    fun saveActualSettings(configuration: Settings) {
+        val json = gson.toJson(configuration)
+        preferences.edit().putString(settingsConfKey, json).apply()
+    }
 
     fun loadLastConfiguration(): Configuration {
         val json = preferences.getString(chosenConfigurationKey, null)

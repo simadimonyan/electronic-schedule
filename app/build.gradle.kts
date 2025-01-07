@@ -27,6 +27,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true //R8 compiler
+            isShrinkResources = true //Shrinking
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -43,6 +44,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    composeCompiler {
+        enableStrongSkippingMode = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"

@@ -25,16 +25,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,17 +48,22 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.imsit.schedule.R
 import com.imsit.schedule.data.models.DataClasses
-import com.imsit.schedule.events.UIScheduleEvent
+import com.imsit.schedule.ui.navigation.Settings
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
-import com.imsit.schedule.viewmodels.ScheduleViewModel
+import com.imsit.schedule.viewmodels.GroupsViewModel
 
 @Composable
 fun ScheduleScreen(
-    viewModel: ScheduleViewModel = hiltViewModel(),
-    navController: NavHostController
+    viewModel: GroupsViewModel = hiltViewModel(),
+    globalGraph: NavHostController
 ) {
+
+    val scheduleFullWeek by viewModel.shared.scheduleFullWeek.collectAsState()
+    val loading by viewModel.shared.loading.collectAsState()
+    val today by viewModel.today.collectAsState()
+
     ScheduleTheme {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -68,29 +74,53 @@ fun ScheduleScreen(
                     .fillMaxSize()
                     .background(background)
             ) {
-                TodayScheduleRender(viewModel)
+                if (loading) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(25.dp, 45.dp, 80.dp, 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = today,
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    DefaultLoadingUnit()
+                }
+                else {
+                    if (scheduleFullWeek) {
+                        WeekScheduleRender(viewModel)
+                    }
+                    else {
+                        TodayScheduleRender(viewModel)
+                    }
+                }
             }
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
             ) {
-                SettingsButton(navController)
+                SettingsButton(viewModel, globalGraph)
             }
         }
     }
 }
 
 @Composable
-fun SettingsButton(navController: NavHostController) {
+fun SettingsButton(viewModel: GroupsViewModel, navController: NavHostController) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         shape = RoundedCornerShape(10.dp)
     ) {
-
         val navigationLink = {
-            navController.navigate(com.imsit.schedule.ui.navigation.Settings) {
+            navController.navigate(route = Settings) {
                 popUpTo(navController.graph.findStartDestination().id
                 ) {
                     saveState = true
@@ -119,19 +149,83 @@ fun SettingsButton(navController: NavHostController) {
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
-fun WeekScheduleRender(viewModel: ScheduleViewModel) {
-    LaunchedEffect(Unit) {
-        viewModel.handleEvent(UIScheduleEvent.ShowWeekLessons)
-    }
+fun WeekScheduleRender(viewModel: GroupsViewModel) {
+
     val weekLessonsState by viewModel.weekLessons.collectAsState()
+    val groupState by viewModel.groupState.collectAsState()
+    val today by viewModel.today.collectAsState()
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 5.dp),
+    ) {
+
+        item {
+            Spacer(modifier = Modifier.height(25.dp))
+        }
+
+        item {
+            if (weekLessonsState.isEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(25.dp, 15.dp, 80.dp, 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = today,
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                WeekendUnit()
+            }
+            else {
+                weekLessonsState.keys.forEach { dayIndex ->
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(25.dp, 20.dp, 80.dp, 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        groupState.weekDates[dayIndex]?.let {
+                            Text(
+                                text = it,
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    weekLessonsState[dayIndex]?.let { lessons ->
+
+                        if (lessons.isEmpty()) {
+                            WeekendUnit()
+                        }
+
+                        lessons.forEach { lesson ->
+                            ScheduleUnit(lesson = lesson)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(100.dp))
+        }
+    }
 }
 
 @Composable
-fun TodayScheduleRender(viewModel: ScheduleViewModel) {
-    LaunchedEffect(Unit) {
-        viewModel.handleEvent(UIScheduleEvent.ShowTodayLessons)
-        viewModel.handleEvent(UIScheduleEvent.ShowDateToday)
-    }
+fun TodayScheduleRender(viewModel: GroupsViewModel) {
+
     val lessonsState by viewModel.todayLessons.collectAsState()
     val today by viewModel.today.collectAsState()
 
@@ -151,7 +245,8 @@ fun TodayScheduleRender(viewModel: ScheduleViewModel) {
 
     if (lessonsState.isEmpty()) {
         WeekendUnit()
-    } else {
+    }
+    else {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
@@ -162,6 +257,40 @@ fun TodayScheduleRender(viewModel: ScheduleViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun DefaultLoadingUnit() {
+    Text(
+        LocalContext.current.getString(R.string.empty_screen),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp, 50.dp, 0.dp, 10.dp),
+        textAlign = TextAlign.Center,
+        fontSize = 23.sp,
+        fontWeight = FontWeight.Bold
+    )
+    Loader(resource = R.raw.error_animation, 270.dp)
+    Spacer(modifier = Modifier.width(10.dp))
+    Text(
+        text = LocalContext.current.getString(R.string.message),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 45.dp),
+        textAlign = TextAlign.Left,
+        color = Color.Black,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Bold
+    )
+    Text(
+        text = LocalContext.current.getString(R.string.recommendations),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 45.dp),
+        textAlign = TextAlign.Left,
+        color = Color.Gray,
+        fontSize = 13.sp
+    )
 }
 
 @Composable
@@ -179,7 +308,7 @@ fun WeekendUnit() {
             shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            Loader(resource = R.raw.weekend)
+            Loader(resource = R.raw.weekend, 130.dp)
         }
     }
 }
@@ -261,7 +390,7 @@ private fun ScheduleUnitContent(lesson: DataClasses.Lesson) {
 }
 
 @Composable
-fun Loader(resource: Int) {
+fun Loader(resource: Int, height: Dp) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resource))
     val progress by animateLottieCompositionAsState(
         composition = composition,
@@ -272,7 +401,7 @@ fun Loader(resource: Int) {
 
     Column(
         modifier = Modifier
-            .height(130.dp)
+            .height(height)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally

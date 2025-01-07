@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Schedule</string>
-
     <!-- Day Weeks -->
     <string name="monday">Понедельник</string>
     <string name="tuesday">Вторник</string>
@@ -22,4 +20,16 @@
     <string name="update_data">Обновляем данные…</string>
     <string name="get_data">Получаем данные с сервера</string>
     <string name="update_schedule">Обновление расписания</string>
+    <string name="empty_screen">Упс, здесь ничего нет</string>
+    <string name="message"> Пожалуйста проверьте следующее:</string>
+    <string name="recommendations">
+        - Проверьте стабильность вашего интернет соединения; \n
+        - Очистите данные и кеш приложения; \n
+        - Перезагрузите приложение; \n
+        - Возможно, есть временные проблемы с https://imsit.ru.
+    </string>
+    <string name="contacts">По всем проблемам и предложениям пишите разработчику</string>
+    <string name="tg">@dimitrisimonyan</string>>
+    <string name="lesson_alert">Скоро занятие!</string>
+    <string name="app_name" translatable="false">Schedule</string>
 </resources>

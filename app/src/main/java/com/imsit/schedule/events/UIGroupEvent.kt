@@ -7,7 +7,7 @@ sealed class UIGroupEvent {
     object ShowBottomSheet : UIGroupEvent()
     object HideBottomSheet : UIGroupEvent()
     data class SetSelectedIndex(val index: Int) : UIGroupEvent()
-    object RestoreCache : UIGroupEvent()
+  //  object RestoreCache : UIGroupEvent()
     object CreateSchedule : UIGroupEvent()
     data class DisplayGroups(val course: String, val speciality: String) : UIGroupEvent()
     data class DisplaySpecialities(val course: String) : UIGroupEvent()

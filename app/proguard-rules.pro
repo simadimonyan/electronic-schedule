@@ -22,6 +22,7 @@
 # For Jetpack Compose (UI Framework)
 -keep class androidx.compose.** { *; }
 -keep class androidx.lifecycle.** { *; }
+-keep class androidx.navigation.** { *; }
 
 # For Coroutines
 -dontwarn kotlinx.coroutines.**

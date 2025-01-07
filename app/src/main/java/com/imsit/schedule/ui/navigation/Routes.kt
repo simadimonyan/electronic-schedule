@@ -1,80 +1,95 @@
 package com.imsit.schedule.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import com.imsit.schedule.ui.screens.GroupScreen
+import com.imsit.schedule.ui.screens.RouteScreen
 import com.imsit.schedule.ui.screens.ScheduleScreen
 import com.imsit.schedule.ui.screens.Settings
+import com.imsit.schedule.viewmodels.GroupsViewModel
 import kotlinx.serialization.Serializable
 
-@Serializable
-object GroupScreen
+@Serializable object AppMainRoute
 
-@Serializable
-object ScheduleScreen
+@Serializable object GroupScreen
+@Serializable object ScheduleScreen
 
-@Serializable
-object Settings
+@Serializable object Route
+
+@Serializable object Settings
 
 @Composable
-fun AppNavGraph(navController: NavHostController) {
+fun AppNavGraph(globalGraph: NavHostController, navController: NavHostController, groupsViewModel: GroupsViewModel) {
+
+    val screenIndex by groupsViewModel.shared.screenIndex.collectAsState()
 
     NavHost(
         navController = navController,
-        startDestination = GroupScreen,
+        startDestination = AppMainRoute,
     ) {
-        composable<GroupScreen>(
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(250)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(250)
-                )
+        navigation<AppMainRoute>(startDestination = if (screenIndex == 1) ScheduleScreen else GroupScreen) {
+            composable<GroupScreen>(
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(250)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(250)
+                    )
+                }
+            ) {
+                GroupScreen(groupsViewModel)
             }
-        ) {
-            GroupScreen(hiltViewModel())
+            composable<ScheduleScreen>(
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(250)
+
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(250)
+                    )
+                }
+            ){
+                ScheduleScreen(groupsViewModel, globalGraph)
+            }
         }
-        composable<ScheduleScreen>(
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(250)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(250)
-                )
-            }
-        ){
-            ScheduleScreen(hiltViewModel(), navController)
+    }
+}
+
+@Composable
+fun AddNavGraph(navController: NavHostController) {
+
+    val viewModel: GroupsViewModel = hiltViewModel()
+    val nestedController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = Route) {
+        composable<Route> {
+            RouteScreen(hiltViewModel(), navController, nestedController, viewModel)
         }
         composable<Settings>(
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
                     animationSpec = tween(
-                        durationMillis = 250,
-                        easing = FastOutSlowInEasing
-                    )
-                ) + fadeIn(
-                    animationSpec = tween(
-                        durationMillis = 250,
-                        easing = FastOutSlowInEasing
+                        durationMillis = 250
                     )
                 )
             },
@@ -82,13 +97,7 @@ fun AppNavGraph(navController: NavHostController) {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
                     animationSpec = tween(
-                        durationMillis = 250,
-                        easing = FastOutSlowInEasing
-                    )
-                ) + fadeOut(
-                    animationSpec = tween(
-                        durationMillis = 250,
-                        easing = FastOutSlowInEasing
+                        durationMillis = 250
                     )
                 )
             }

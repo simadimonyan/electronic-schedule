@@ -49,7 +49,7 @@ class WebParser {
                     val a = tableData[i].select("a").attr("href")
 
                     // if cell is not empty
-                    if (!tableData[i].text().equals("")) {
+                    if (!tableData[i].text().equals("") && !tableData[i].text().equals(" ")) {
 
                         // getting group schedule
                         val schedule = Network.connect("$PATTERN_URL$a", TIMEOUT)
@@ -87,9 +87,28 @@ class WebParser {
 
                                     val type = match?.groups?.get(1)?.value // Type: пр., л., лаб.
                                     val finalType = if (type == "пр.") "Практика" else if (type == "л.") "Лекция" else "Лаборатория"
-                                    val teacher = match?.groups?.get(3)?.value // Teacher: Лисин Д.А.
-                                    val location = match?.groups?.get(4)?.value // Location: 1-126
-                                    val name = match?.groups?.get(2)?.value // Name: Электротехника
+                                    var teacher = match?.groups?.get(3)?.value // Teacher: Лисин Д.А.
+                                    var location = match?.groups?.get(4)?.value // Location: 1-126
+                                    var name = match?.groups?.get(2)?.value // Name: Электротехника
+
+                                    // if like "Современные педагогические технологии Салменкова М.В. ."
+                                    if (location == null) {
+                                        val nameParts = name?.split(" ")?.toMutableList()
+
+                                        if (nameParts != null && nameParts.size >= 3) {
+                                            teacher = (teacher ?: "") + " " + nameParts.takeLast(3).joinToString(" ")
+                                            name = nameParts.dropLast(3).joinToString(" ")
+                                            location = " - "
+                                        }
+
+                                        teacher = teacher?.trim()?.let {
+                                            if (it.matches(Regex("^[А-ЯЁ][а-яё]+ [А-ЯЁ]\\.[А-ЯЁ]\\.$"))) {
+                                                it
+                                            } else { // if "Докторов С.Э.." replace last '.' with ""
+                                                it.replace(Regex("\\.+$"), "")
+                                            }
+                                        }
+                                    }
 
                                     lessonsArray.add(
                                         DataClasses.Lesson(
@@ -141,6 +160,16 @@ class WebParser {
                 current++
                 progress((current * 100) / total)  // update the progress
             }
+
+            // remove empty course
+            val delete: ArrayList<String> = ArrayList()
+            sorted.keys.forEach { key ->
+                if (sorted[key]?.isEmpty() == true) delete.add(key)
+            }
+            for (del in delete) {
+                sorted.remove(del)
+            }
+
             this.groups = sorted.toMutableMap() as HashMap<String, HashMap<String, ArrayList<Group>>>
 
             return this.groups

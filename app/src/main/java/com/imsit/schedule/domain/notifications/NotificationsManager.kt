@@ -35,6 +35,18 @@ class NotificationsManager {
             .build()
     }
 
+    fun createLessonAlertNotification(context: Context, message: String): Notification {
+        return NotificationCompat.Builder(context, "GROUP_SYNC_CHANNEL")
+            .setSmallIcon(R.drawable.noification, 0)
+            .setContentTitle(context.getString(R.string.lesson_alert))
+            .setContentText(message)
+            .setProgress(100, 0, false)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setDefaults(NotificationCompat.PRIORITY_HIGH)
+            .build()
+    }
+
     fun updateProgressNotification(id: Int, context: Context, progress: Int) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
