@@ -318,6 +318,7 @@ class GroupsViewModel @Inject constructor(
     private suspend fun getTodayLessons(): ArrayList<DataClasses.Lesson> {
         return withContext(Dispatchers.IO) {
             val week: HashMap<Int, ArrayList<DataClasses.Lesson>> = getWeekLessonsByGroup()
+            val cacheManager = CacheManager(resources.getContext())
 
             // update week
             showWeekLessons(week)
@@ -329,6 +330,7 @@ class GroupsViewModel @Inject constructor(
 
             for (day in week.keys) {
                 if (DataClasses.DayWeek.findById(day)?.name == dayWeek) {
+                    cacheManager.saveTodaySchedule(week[day] as ArrayList<DataClasses.Lesson>)
                     return@withContext week[day] as ArrayList<DataClasses.Lesson>
                 }
             }

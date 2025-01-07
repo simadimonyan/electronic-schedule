@@ -94,6 +94,7 @@ class MainViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 val context = resources.getContext()
                 CacheUpdater.setupPeriodicWork(context)
+                CacheUpdater.setupPeriodicScheduleWork(context)
             }
         }
     }

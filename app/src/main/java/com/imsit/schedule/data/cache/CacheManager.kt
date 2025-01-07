@@ -14,11 +14,32 @@ class CacheManager(context: Context) {
     private val groupsCacheKey = "groups_cache"
     private val chosenConfigurationKey = "chosen_configuration"
     private val settingsConfKey = "settings_configuration"
+    private val todayScheduleKey = "today_schedule_key"
     private val cacheExpiryTime = 24 * 60 * 60 * 1000 // milliseconds
 
     data class Configuration(val course: String, val speciality: String, val group: String)
 
     data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean)
+
+    fun loadTodaySchedule(): ArrayList<DataClasses.Lesson> {
+        val json = preferences.getString(todayScheduleKey, null)
+
+        val type = object : TypeToken<ArrayList<DataClasses.Lesson>>() {}.type
+
+        val value = try {
+            gson.fromJson(json, type)
+        }
+        catch (e: Exception) {
+            ArrayList<DataClasses.Lesson>()
+        }
+
+        return value
+    }
+
+    fun saveTodaySchedule(configuration: ArrayList<DataClasses.Lesson>) {
+        val json = gson.toJson(configuration)
+        preferences.edit().putString(todayScheduleKey, json).apply()
+    }
 
     fun loadLastSettings(): Settings {
         val json = preferences.getString(settingsConfKey, null)
