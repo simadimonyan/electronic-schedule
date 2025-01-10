@@ -15,8 +15,15 @@ class SharedStateRepository @Inject constructor() {
     private val _screenIndex = MutableStateFlow(0)
     val screenIndex: StateFlow<Int> = _screenIndex
 
+    private val _firstStartup = MutableStateFlow(true)
+    val firstStartup: StateFlow<Boolean> = _firstStartup
+
     fun updateIndex(index: Int) {
         _screenIndex.update { index }
+    }
+
+    fun updatingFirstStartup(isFirst: Boolean) {
+        _firstStartup.update { isFirst }
     }
 
     // ---------- Group Preferences ----------

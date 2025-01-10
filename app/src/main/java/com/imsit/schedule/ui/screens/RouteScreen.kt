@@ -26,20 +26,6 @@ fun RouteScreen(
 
     AppNavGraph(navController = nestedGraph, globalGraph = globalGraph, groupsViewModel = groupsViewModel)
 
-//    LaunchedEffect(true) {
-//
-//        if (screenIndex) {
-//            nestedGraph.navigate(ScheduleScreen) {
-//                popUpTo(nestedGraph.graph.findStartDestination().id) {
-//                    saveState = true
-//                }
-//                launchSingleTop = true
-//                restoreState = true
-//            }
-//        }
-//
-//    }
-
     if (!screenIndex) {
         CustomAppBar(groupsViewModel, nestedGraph)
     }

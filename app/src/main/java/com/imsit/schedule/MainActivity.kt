@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import com.imsit.schedule.data.cache.CacheManager
 import com.imsit.schedule.events.DataEvent
 import com.imsit.schedule.ui.navigation.AddNavGraph
 import com.imsit.schedule.ui.theme.background
@@ -35,9 +37,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-            val navController = rememberNavController()
             val viewModel: MainViewModel = hiltViewModel()
             val scope = rememberCoroutineScope()
+            val navController = rememberNavController()
 
             // true - only once | does not start when recomposes
             LaunchedEffect(true) {
@@ -58,7 +60,11 @@ class MainActivity : ComponentActivity() {
             Box(modifier = Modifier
                 .fillMaxSize()
                 .background(background)) {
-                AddNavGraph(navController = navController)
+                val context = LocalContext.current
+                val cacheManager = CacheManager(context)
+                viewModel.shared.updatingFirstStartup(cacheManager.isFirstStartup())
+
+                AddNavGraph(navController = navController, mainViewModel = viewModel)
             }
         }
     }

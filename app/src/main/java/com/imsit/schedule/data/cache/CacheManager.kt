@@ -15,11 +15,20 @@ class CacheManager(context: Context) {
     private val chosenConfigurationKey = "chosen_configuration"
     private val settingsConfKey = "settings_configuration"
     private val todayScheduleKey = "today_schedule_key"
+    private val firstStartUp = "first_startup"
     private val cacheExpiryTime = 24 * 60 * 60 * 1000 // milliseconds
 
     data class Configuration(val course: String, val speciality: String, val group: String)
 
     data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean)
+
+    fun isFirstStartup(): Boolean {
+        return preferences.getBoolean(firstStartUp, true)
+    }
+
+    fun setFirstStartup(isFirst: Boolean) {
+        preferences.edit().putBoolean(firstStartUp, isFirst).apply()
+    }
 
     fun loadTodaySchedule(): ArrayList<DataClasses.Lesson> {
         val json = preferences.getString(todayScheduleKey, null)

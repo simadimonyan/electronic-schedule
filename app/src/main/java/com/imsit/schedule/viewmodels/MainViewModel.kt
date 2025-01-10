@@ -121,6 +121,7 @@ class MainViewModel @Inject constructor(
                 shared.updateSpeciality(configuration.speciality)
                 shared.updateGroup(configuration.group)
             }
+
         } catch (e: Exception) {
             // first-time setup or empty cache case
         }

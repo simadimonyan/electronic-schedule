@@ -12,10 +12,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.imsit.schedule.ui.screens.GroupScreen
+import com.imsit.schedule.ui.screens.OnboardingScreen
 import com.imsit.schedule.ui.screens.RouteScreen
 import com.imsit.schedule.ui.screens.ScheduleScreen
 import com.imsit.schedule.ui.screens.Settings
 import com.imsit.schedule.viewmodels.GroupsViewModel
+import com.imsit.schedule.viewmodels.MainViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable object AppMainRoute
@@ -25,6 +27,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable object Route
 
+@Serializable object Onboarding
 @Serializable object Settings
 
 @Composable
@@ -75,12 +78,25 @@ fun AppNavGraph(globalGraph: NavHostController, navController: NavHostController
 }
 
 @Composable
-fun AddNavGraph(navController: NavHostController) {
+fun AddNavGraph(navController: NavHostController, mainViewModel: MainViewModel) {
 
+    val firstStartup by mainViewModel.shared.firstStartup.collectAsState()
     val viewModel: GroupsViewModel = hiltViewModel()
     val nestedController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Route) {
+    NavHost(navController = navController, startDestination = if (firstStartup) Onboarding else Route) {
+        composable<Onboarding>(
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(
+                        durationMillis = 350
+                    )
+                )
+            }
+        ) {
+            OnboardingScreen(hiltViewModel())
+        }
         composable<Route> {
             RouteScreen(hiltViewModel(), navController, nestedController, viewModel)
         }
