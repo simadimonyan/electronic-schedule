@@ -42,18 +42,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import com.imsit.schedule.R
 import com.imsit.schedule.events.UIGroupEvent
 import com.imsit.schedule.ui.components.BottomSheet
-import com.imsit.schedule.ui.components.CustomAppBar
-import com.imsit.schedule.ui.navigation.AddNavGraph
-import com.imsit.schedule.ui.navigation.AppNavGraph
 import com.imsit.schedule.ui.theme.ScheduleTheme
 import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
 import com.imsit.schedule.viewmodels.GroupsViewModel
-import com.imsit.schedule.viewmodels.MainViewModel
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable

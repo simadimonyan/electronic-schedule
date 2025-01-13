@@ -36,8 +36,13 @@ class CacheUpdater {
 
         private fun calculateDelayUntilNextUpdate(lastUpdateTime: Long): Long {
             val currentTime = System.currentTimeMillis()
+            val oneDayInMillis = 24 * 60 * 60 * 1000L
+
+            if (lastUpdateTime == 0L) {
+                return oneDayInMillis
+            }
+
             val timeSinceLastUpdate = currentTime - lastUpdateTime
-            val oneDayInMillis = 24 * 60 * 60 * 1000
 
             return if (timeSinceLastUpdate < oneDayInMillis) {
                 oneDayInMillis - timeSinceLastUpdate
@@ -56,7 +61,10 @@ class CacheUpdater {
         }
 
         fun setupPeriodicWork(context: Context) {
-            val delay = calculateDelayUntilNextUpdate(CacheManager(context).getLastUpdatedTime())
+
+            val last = CacheManager(context).getLastUpdatedTime()
+
+            val delay = calculateDelayUntilNextUpdate(last)
 
             val periodicWorkRequest = PeriodicWorkRequestBuilder<GroupSyncWorker>(1, TimeUnit.DAYS)
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
@@ -148,10 +156,33 @@ class ScheduleWorker(
 
             updateCache(todayLessons, appContext)
 
-            for (lesson in todayLessons) {
-                Log.e("ScheduleWorker", "setting alarms...")
-                setNotificationForLesson(applicationContext, lesson)
+            // clear all of the alarms
+            val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            val alarms = CacheManager(appContext).loadAlarms()
+
+            if (alarms != null && alarms.isNotEmpty()) {
+                for (alarm in alarms) {
+
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        appContext,
+                        alarm.id,
+                        alarm.intent,
+                        PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+
+                    alarmManager.cancel(pendingIntent)
+                }
             }
+
+            // creating new alarms
+            val intents = ArrayList<CacheManager.IntentConf>()
+            for ((i, lesson) in todayLessons.withIndex()) {
+                Log.e("ScheduleWorker", "setting alarms...")
+                val intent = setNotificationForLesson(applicationContext, lesson, i)
+                intents.add(CacheManager.IntentConf(i, intent))
+            }
+            CacheManager(appContext).saveAlarms(intents)
 
             Result.success()
         } catch (e: Exception) {
@@ -161,7 +192,7 @@ class ScheduleWorker(
         }
     }
 
-    private fun setNotificationForLesson(context: Context, lesson: DataClasses.Lesson) {
+    private fun setNotificationForLesson(context: Context, lesson: DataClasses.Lesson, id: Int): Intent {
         val lessonName = lesson.name
         val lessonCount = lesson.count
         val lessonLocation = lesson.location
@@ -182,9 +213,9 @@ class ScheduleWorker(
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            lesson.hashCode(),
+            id,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -193,6 +224,7 @@ class ScheduleWorker(
             notificationTime,
             pendingIntent
         )
+        return intent
     }
 
     private suspend fun getWeekLessonsByGroup(): HashMap<Int, ArrayList<DataClasses.Lesson>> {

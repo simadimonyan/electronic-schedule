@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.imsit.schedule.R
+import com.imsit.schedule.ui.theme.background
 import com.imsit.schedule.ui.theme.buttons
 import com.imsit.schedule.viewmodels.OnboardingViewModel
 
@@ -29,6 +30,7 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     Scaffold(
+        containerColor = background,
         bottomBar = {
             Button(
                 onClick = {
@@ -49,7 +51,7 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier.padding(inner)
         ) {
-            Spacer(modifier = Modifier.height(200.dp))
+            Spacer(modifier = Modifier.height(150.dp))
             Loader(resource = R.raw.focus, height = 300.dp)
             Spacer(modifier = Modifier.height(20.dp))
             Text(

@@ -1,7 +1,9 @@
 package com.imsit.schedule.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +69,7 @@ fun ScheduleScreen(
     ScheduleTheme {
         Box(modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 20.dp)) {
+            .padding(top=20.dp)) {
 
             Column(
                 modifier = Modifier
@@ -218,7 +220,7 @@ fun WeekScheduleRender(viewModel: GroupsViewModel) {
         }
 
         item {
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(120.dp))
         }
     }
 }
@@ -299,12 +301,13 @@ fun WeekendUnit() {
         modifier = Modifier
             .padding(20.dp, 0.dp, 20.dp, 7.dp)
             .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = buttons)
     ) {
         Card(
             modifier = Modifier
-                .padding(4.dp, 0.dp, 0.dp, 0.dp),
+                .padding(4.dp, 0.dp, 0.dp, 0.dp)
+                .border(BorderStroke(2.dp, Color.White)),
             shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
@@ -319,12 +322,13 @@ fun ScheduleUnit(lesson: DataClasses.Lesson) {
         modifier = Modifier
             .padding(20.dp, 0.dp, 20.dp, 7.dp)
             .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = buttons)
     ) {
         Card(
             modifier = Modifier
-                .padding(4.dp, 0.dp, 0.dp, 0.dp),
+                .padding(4.dp, 0.dp, 0.dp, 0.dp)
+                .border(BorderStroke(2.dp, Color.White)),
             shape = RoundedCornerShape(0.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {

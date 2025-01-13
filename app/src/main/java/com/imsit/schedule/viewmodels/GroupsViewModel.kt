@@ -1,5 +1,9 @@
 package com.imsit.schedule.viewmodels
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.imsit.schedule.R
@@ -7,6 +11,7 @@ import com.imsit.schedule.data.cache.CacheManager
 import com.imsit.schedule.data.models.DataClasses
 import com.imsit.schedule.di.ResourceManager
 import com.imsit.schedule.di.SharedStateRepository
+import com.imsit.schedule.domain.notifications.NotificationReceiver
 import com.imsit.schedule.domain.usecases.GetWeekCount
 import com.imsit.schedule.events.UIGroupEvent
 import com.imsit.schedule.events.UIScheduleEvent
@@ -19,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
@@ -331,6 +338,34 @@ class GroupsViewModel @Inject constructor(
             for (day in week.keys) {
                 if (DataClasses.DayWeek.findById(day)?.name == dayWeek) {
                     cacheManager.saveTodaySchedule(week[day] as ArrayList<DataClasses.Lesson>)
+
+                    // clear all of the alarms
+                    val alarmManager = resources.getContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+                    val alarms = cacheManager.loadAlarms()
+
+                    if (alarms != null && alarms.isNotEmpty()) {
+                        for (alarm in alarms) {
+
+                            val pendingIntent = PendingIntent.getBroadcast(
+                                resources.getContext(),
+                                alarm.id,
+                                alarm.intent,
+                                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
+
+                            alarmManager.cancel(pendingIntent)
+                        }
+                    }
+
+                    // set new alarms
+                    val intents = ArrayList<CacheManager.IntentConf>()
+                    for ((i, lesson) in (week[day] as ArrayList<DataClasses.Lesson>).withIndex()) {
+                        val intent = setNotificationForLesson(resources.getContext(), lesson, i)
+                        if (intent != null) intents.add(CacheManager.IntentConf(i, intent))
+                    }
+                    cacheManager.saveAlarms(intents)
+
                     return@withContext week[day] as ArrayList<DataClasses.Lesson>
                 }
             }
@@ -352,6 +387,45 @@ class GroupsViewModel @Inject constructor(
             }
 
             return@withContext week
+        }
+    }
+
+    private suspend fun setNotificationForLesson(context: Context, lesson: DataClasses.Lesson, id: Int): Intent? {
+        return withContext(Dispatchers.IO) {
+            val lessonName = lesson.name
+            val lessonCount = lesson.count
+            val lessonLocation = lesson.location
+            val lessonTime = lesson.time
+
+            val lessonStartTimeString = lessonTime.split("-")[0]
+            val formatter = DateTimeFormatter.ofPattern("HH:mm")
+            val lessonStartTime = LocalTime.parse(lessonStartTimeString, formatter)
+            val currentDate = LocalDate.now()
+            val lessonTimeInMillis = currentDate.atTime(lessonStartTime).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            if (lessonTimeInMillis > System.currentTimeMillis()) {
+                val notificationTime = lessonTimeInMillis - 5 * 60 * 1000
+
+                val intent = Intent(context, NotificationReceiver::class.java).apply {
+                    putExtra("lesson", "Пара $lessonCount: $lessonName в $lessonLocation")
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    id,
+                    intent,
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    notificationTime,
+                    pendingIntent
+                )
+                return@withContext intent
+            }
+            return@withContext null
         }
     }
 

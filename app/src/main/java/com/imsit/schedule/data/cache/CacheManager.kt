@@ -1,6 +1,7 @@
 package com.imsit.schedule.data.cache
 
 import android.content.Context
+import android.content.Intent
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -16,11 +17,34 @@ class CacheManager(context: Context) {
     private val settingsConfKey = "settings_configuration"
     private val todayScheduleKey = "today_schedule_key"
     private val firstStartUp = "first_startup"
-    private val cacheExpiryTime = 24 * 60 * 60 * 1000 // milliseconds
+    private val alarmsKey = "alarms"
+    //private val cacheExpiryTime = 24 * 60 * 60 * 1000 // milliseconds
 
     data class Configuration(val course: String, val speciality: String, val group: String)
 
+    data class IntentConf(val id: Int, val intent: Intent)
+
     data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean)
+
+    fun loadAlarms(): ArrayList<IntentConf> {
+        val json = preferences.getString(alarmsKey, null)
+
+        val type = object : TypeToken<ArrayList<IntentConf>>() {}.type
+
+        val value = try {
+            gson.fromJson(json, type)
+        }
+        catch (e: Exception) {
+            ArrayList<IntentConf>()
+        }
+
+        return value
+    }
+
+    fun saveAlarms(configuration: ArrayList<IntentConf>) {
+        val json = gson.toJson(configuration)
+        preferences.edit().putString(alarmsKey, json).apply()
+    }
 
     fun isFirstStartup(): Boolean {
         return preferences.getBoolean(firstStartUp, true)
@@ -99,8 +123,8 @@ class CacheManager(context: Context) {
     }
 
     fun shouldUpdateCache(): Boolean {
-        val currentTime = System.currentTimeMillis()
-        return (currentTime - getLastUpdatedTime()) > cacheExpiryTime
+        val last = getLastUpdatedTime()
+        return last == 0L
     }
 
     fun saveGroupsToCache(groups: HashMap<String, HashMap<String, ArrayList<DataClasses.Group>>>) {
