@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Android.Schedule.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Android.Schedule.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Android.Schedule.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Android.Schedule.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Schedule.iml" filepath="$PROJECT_DIR$/.idea/modules/Schedule.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Schedule.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Schedule.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Schedule.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Schedule.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Schedule.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Schedule.app.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/baselineprofile/Schedule.baselineprofile.iml" filepath="$PROJECT_DIR$/.idea/modules/baselineprofile/Schedule.baselineprofile.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/baselineprofile/Schedule.baselineprofile.main.iml" filepath="$PROJECT_DIR$/.idea/modules/baselineprofile/Schedule.baselineprofile.main.iml" />

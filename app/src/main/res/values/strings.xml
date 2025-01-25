@@ -28,9 +28,9 @@
         - Перезагрузите приложение; \n
         - Возможно, есть временные проблемы с https://imsit.ru.
     </string>
-    <string name="contacts">По всем проблемам и предложениям пишите разработчику</string>
+    <string name="contacts">По всем проблемам и предложениям пишите \n разработчику</string>
     <string name="tg">@dimitrisimonyan</string>>
     <string name="lesson_alert">Скоро занятие!</string>
     <string name="onboarding">Подгрузка расписания ведется с https://imsit.ru</string>
-    <string name="app_name" translatable="false">Schedule</string>
+    <string name="app_name" translatable="false">Мой Колледж</string>
 </resources>

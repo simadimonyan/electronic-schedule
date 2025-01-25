@@ -9,14 +9,14 @@ plugins {
 }
 
 android {
-    namespace = "com.imsit.schedule"
+    namespace = "com.mycollege.schedule"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.imsit.schedule"
+        applicationId = "com.mycollege.schedule"
         minSdk = 27
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,6 +62,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+
     implementation(libs.lottie.compose)
 
     implementation(libs.kotlinx.serialization.json)
@@ -73,7 +76,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview.android)
     "baselineProfile"(project(":baselineprofile"))
     kapt(libs.hilt.android.compiler)
-    //implementation(libs.androidx.hilt.lifecycle.viewmodel)
     implementation(libs.androidx.hilt.navigation.compose.v120)
 
     implementation(libs.junit.jupiter)
@@ -100,7 +102,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    debugImplementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.ui.tooling)
     implementation(libs.androidx.material3)
 
     androidTestImplementation(libs.androidx.junit)
