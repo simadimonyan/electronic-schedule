@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Schedule"
+rootProject.name = "Мой Колледж"
 include(":app")
 include(":baselineprofile")

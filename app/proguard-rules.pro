@@ -7,7 +7,7 @@
 -keepattributes Signature, InnerClasses
 
 # Keep application model classes (serialization/deserialization)
--keep class com.myapplication.model.** { *; }
+-keep class com.mycollege.schedule.** { *; }
 
 # For Gson (JSON serialization/deserialization)
 -keep class com.google.gson.** { *; }
@@ -44,7 +44,7 @@
 
 # Optional: For debugging stack traces
 # Uncomment the following to keep method names intact (useful for debugging but reduces obfuscation)
--keep class com.imsit.schedule.** { *; }
+-keep class com.mycollege.schedule.** { *; }
 -keepattributes SourceFile,LineNumberTable
 -keep class * {
     public *;
@@ -65,6 +65,4 @@
 -keepclassmembers class kotlin.** { *; }
 -dontwarn kotlin.**
 
-# Exclude test packages (optional)
--dontwarn com.myapplication.tests.**
--keep class com.myapplication.tests.** { *; }
+

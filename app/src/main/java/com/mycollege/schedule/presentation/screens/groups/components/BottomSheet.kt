@@ -84,6 +84,7 @@ fun BottomSheetContent(
                 }
                 onDismiss()
             }
+
         }
     }
 }
@@ -179,9 +180,9 @@ fun GroupListContent(
     groupsToDisplay: List<String>,
     updateValue: (String) -> Unit
 ) {
-    groupsToDisplay.let {
-        LazyColumn {
-            itemsIndexed(it, key = { _, group -> group }) { index, group ->
+    LazyColumn {
+        itemsIndexed(groupsToDisplay, key = { _, group -> group }) { index, group ->
+            group.let { nonNullGroup ->
                 if (index != 0) {
                     HorizontalDivider(
                         thickness = 0.5.dp,
@@ -191,11 +192,11 @@ fun GroupListContent(
                 }
 
                 Text(
-                    text = group,
+                    text = nonNullGroup,
                     modifier = Modifier
                         .padding(10.dp)
                         .fillMaxWidth()
-                        .clickable { updateValue(group) },
+                        .clickable { updateValue(nonNullGroup) },
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
                     color = Color.Black
