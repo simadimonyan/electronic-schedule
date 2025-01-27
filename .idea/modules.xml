@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Schedule.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Schedule.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Мой_Колледж.iml" filepath="$PROJECT_DIR$/.idea/modules/Мой_Колледж.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Мой_Колледж.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Мой_Колледж.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Мой_Колледж.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Мой_Колледж.app.main.iml" />

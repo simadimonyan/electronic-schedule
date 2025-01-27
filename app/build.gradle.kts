@@ -6,6 +6,16 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.baselineprofile)
+    id("ru.ok.tracer").version("1.0.1")
+}
+
+tracer {
+    create("defaultConfig") {
+        pluginToken = ""
+        appToken = ""
+
+        // Включает загрузку маппингов для билда. По умолчанию включена
+        uploadMapping = true
 }
 
 android {
@@ -14,8 +24,8 @@ android {
 
     defaultConfig {
         applicationId = "com.mycollege.schedule"
-        minSdk = 27
-        versionCode = 1
+        minSdk = 29
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -26,8 +36,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true //R8 compiler
-            isShrinkResources = true //Shrinking
+            isMinifyEnabled = false //R8 compiler
+            isShrinkResources = false //Shrinking
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +72,14 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.tracer.platform))
+    implementation(libs.tracer.crash.report)
+    implementation(libs.tracer.crash.report.native)
+    implementation(libs.tracer.heap.dumps)
+    implementation(libs.tracer.disk.usage)
+    implementation(libs.tracer.profiler.sampling)
+    implementation(libs.tracer.profiler.systrace)
+
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
 

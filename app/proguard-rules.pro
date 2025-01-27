@@ -6,6 +6,15 @@
 -keepattributes *Annotation*
 -keepattributes Signature, InnerClasses
 
+# Keep BouncyCastle classes
+-keep class org.bouncycastle.jsse.** { *; }
+
+# Keep Conscrypt classes
+-keep class org.conscrypt.** { *; }
+
+# Keep OpenJSSE classes
+-keep class org.openjsse.** { *; }
+
 # Keep application model classes (serialization/deserialization)
 -keep class com.mycollege.schedule.** { *; }
 
