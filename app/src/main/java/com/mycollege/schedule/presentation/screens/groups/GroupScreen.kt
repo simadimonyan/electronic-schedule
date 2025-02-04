@@ -224,7 +224,7 @@ fun ActionButton(text: String, icon: Int, onClick: () -> Unit, enabled: Boolean)
                 .fillMaxHeight()
         ) {
             Image(
-                painter = painterResource(id = R.drawable.noification),
+                painter = painterResource(id = R.drawable.notification),
                 contentDescription = null,
                 modifier = Modifier.size(35.dp),
                 colorFilter = ColorFilter.tint(Color.White),

@@ -24,6 +24,7 @@ class StartViewModel @Inject constructor(
             // Settings
             shared.updateFullWeek(settings.fullWeek)
             shared.updateNavInvisibility(settings.isNavInvisible)
+            shared.updateWeekChangeMode(settings.changeWeekCount)
         }
         catch (_: Exception) {}
     }

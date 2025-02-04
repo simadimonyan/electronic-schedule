@@ -8,10 +8,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.mycollege.schedule.R
+import ru.ok.tracer.crash.report.TracerCrashReport
+import ru.rustore.sdk.pushclient.messaging.exception.RuStorePushClientException
+import ru.rustore.sdk.pushclient.messaging.model.RemoteMessage
+import ru.rustore.sdk.pushclient.messaging.service.RuStoreMessagingService
 
 class NotificationsManager {
 
@@ -29,7 +34,7 @@ class NotificationsManager {
 
     fun createNotification(context: Context, message: String): Notification {
         return NotificationCompat.Builder(context, "GROUP_SYNC_CHANNEL")
-            .setSmallIcon(R.drawable.noification, 0)
+            .setSmallIcon(R.drawable.notification, 0)
             .setContentTitle(context.getString(R.string.update_schedule))
             .setContentText(message)
             .setProgress(100, 0, false)
@@ -43,7 +48,7 @@ class NotificationsManager {
 
     fun createLessonAlertNotification(context: Context, message: String): Notification {
         return NotificationCompat.Builder(context, "GROUP_SYNC_CHANNEL")
-            .setSmallIcon(R.drawable.noification, 0)
+            .setSmallIcon(R.drawable.notification, 0)
             .setContentTitle(context.getString(R.string.lesson_alert))
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -57,7 +62,7 @@ class NotificationsManager {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val updatedNotification = NotificationCompat.Builder(context, "GROUP_SYNC_CHANNEL")
-            .setSmallIcon(R.drawable.noification, 0)
+            .setSmallIcon(R.drawable.notification, 0)
             .setContentTitle(context.getString(R.string.update_schedule))
             .setContentText(context.getString(R.string.get_data))
             .setProgress(100, progress, false)
@@ -99,6 +104,32 @@ class NotificationReceiver : BroadcastReceiver() {
             return
         }
         notificationManager.notify(lesson.hashCode(), notification)
+    }
+
+}
+
+class RuStoreMessagingService : RuStoreMessagingService() {
+
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+        Log.d("App", "onNewToken token = $token")
+        /*
+         Вам необходимо отправить полученный пуш-токен на свой сервер,
+         с которого будет осуществляться рассылка пуш-уведомлений.
+         */
+    }
+
+    override fun onMessageReceived(message: RemoteMessage) {
+        super.onMessageReceived(message)
+        Log.i("MESSAGE", "RuStore Message Service: got 1 message")
+    }
+
+    override fun onError(errors: List<RuStorePushClientException>) {
+        super.onError(errors)
+        errors.forEach { error ->
+            error.printStackTrace()
+            TracerCrashReport.report(error, issueKey = "RUSTORE_PUSH_SERVICE")
+        }
     }
 
 }

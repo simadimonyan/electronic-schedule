@@ -61,6 +61,10 @@ class ScheduleViewModel @Inject constructor(
 
     }
 
+    fun changeWeekCountEvent() {
+        viewModelScope.launch { showTodayLessons() }
+    }
+
     private fun updateWeekDates() {
         viewModelScope.launch {
             _scheduleState.update { it.copy(weekDates = getCurrentWeekDate()) }
@@ -96,7 +100,8 @@ class ScheduleViewModel @Inject constructor(
                 )
 
             var chosenGroup: DataClasses.Group? = null
-            val count = GetWeekCount.calculateCount()
+            var count = GetWeekCount.calculateCount()
+            if (shared.changeWeekCount.value) count = if (count == 1) 0 else 1 // if change week event is executed
 
             if (groups != null) {
                 for (group in groups.iterator()) {

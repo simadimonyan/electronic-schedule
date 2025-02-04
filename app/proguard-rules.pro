@@ -15,6 +15,23 @@
 # Keep OpenJSSE classes
 -keep class org.openjsse.** { *; }
 
+# Suppress warnings for missing BouncyCastle classes
+-dontwarn org.bouncycastle.jsse.BCSSLParameters
+-dontwarn org.bouncycastle.jsse.BCSSLSocket
+-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+
+# Suppress warnings for missing Conscrypt classes
+-dontwarn org.conscrypt.Conscrypt$Version
+-dontwarn org.conscrypt.Conscrypt
+-dontwarn org.conscrypt.ConscryptHostnameVerifier
+
+# Suppress warnings for missing OpenJSSE classes
+-dontwarn org.openjsse.javax.net.ssl.SSLParameters
+-dontwarn org.openjsse.javax.net.ssl.SSLSocket
+-dontwarn org.openjsse.net.ssl.OpenJSSE
+
+-keep public class com.vk.push.** extends android.os.Parcelable
+
 # Keep application model classes (serialization/deserialization)
 -keep class com.mycollege.schedule.** { *; }
 

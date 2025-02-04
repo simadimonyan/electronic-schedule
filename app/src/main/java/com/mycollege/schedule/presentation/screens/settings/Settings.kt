@@ -40,7 +40,6 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -93,7 +92,9 @@ fun Settings(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
+
                 val fullWeekState by viewModel.shared.scheduleFullWeek.collectAsState()
+                val changeWeekMode by viewModel.shared.changeWeekCount.collectAsState()
                 val navInvisibilityState by viewModel.shared.navigationInvisibility.collectAsState()
 
                 CardSettings(title = "Показать неделю", checkedState = fullWeekState) {
@@ -101,10 +102,16 @@ fun Settings(
                     viewModel.handleEvent(SettingsEvent.SaveSettings)
                 }
 
+                CardSettings(title = "Переключить неделю", checkedState = changeWeekMode) {
+                    viewModel.handleEvent(SettingsEvent.MakeWeekCountDifferent(it))
+                    viewModel.handleEvent(SettingsEvent.SaveSettings)
+                }
+
                 CardSettings(title = "Скрыть навигацию", checkedState = navInvisibilityState) {
                     viewModel.handleEvent(SettingsEvent.MakeNavigationInvisible(it))
                     viewModel.handleEvent(SettingsEvent.SaveSettings)
                 }
+
             }
         }
     }
@@ -148,7 +155,6 @@ fun CardSettings(title: String, checkedState: Boolean, onChanged: (Boolean) -> U
     }
 }
 
-@Preview(showSystemUi = true)
 @Composable
 fun Label() {
     BoxWithConstraints(

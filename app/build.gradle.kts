@@ -11,8 +11,8 @@ plugins {
 
 tracer {
     create("defaultConfig") {
-        pluginToken = ""
-        appToken = ""
+        pluginToken = "562suLzs2fpFm6K28WZYqYUR0tJRWE39l1RNNOpdiyv1"
+        appToken = "cIyaFR772N1jvb5ltIKBukXI9XFuOwwvzz00tSGKwmr1"
 
         // Включает загрузку маппингов для билда. По умолчанию включена
         uploadMapping = true
@@ -21,6 +21,14 @@ tracer {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("/Users/dimitrisimonyan/Yandex.Disk.localized/Проекты/Android/signkey")
+            storePassword = "vd410078060"
+            keyAlias = "application"
+            keyPassword = "vd410078060"
+        }
+    }
     namespace = "com.mycollege.schedule"
     compileSdk = 35
 
@@ -38,13 +46,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false //R8 compiler
-            isShrinkResources = false //Shrinking
+            isMinifyEnabled = true //R8 compiler
+            isShrinkResources = true //Shrinking
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -74,6 +82,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.pushclient)
+
     implementation(platform(libs.tracer.platform))
     implementation(libs.tracer.crash.report)
     implementation(libs.tracer.crash.report.native)

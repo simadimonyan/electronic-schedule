@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.ok.tracer.crash.report.TracerCrashReport
 import javax.inject.Inject
 
 @HiltViewModel
@@ -84,6 +85,7 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 shared.updateLoading(true)
                 e.printStackTrace()
+                TracerCrashReport.report(e, issueKey = "NETWORK")
             }
         }
     }

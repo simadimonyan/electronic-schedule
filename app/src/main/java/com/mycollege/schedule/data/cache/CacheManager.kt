@@ -23,7 +23,7 @@ class CacheManager @Inject constructor(
 
     data class IntentConf(val id: Int, val intent: Intent)
 
-    data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean)
+    data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean, val changeWeekCount: Boolean = false)
 
     fun loadAlarms(): ArrayList<IntentConf> {
         val json = preferences.getString(alarmsKey, null)
@@ -82,7 +82,7 @@ class CacheManager @Inject constructor(
             gson.fromJson(json, type)
         }
         catch (e: Exception) {
-            Settings(fullWeek = false, isNavInvisible = false)
+            Settings(fullWeek = false, isNavInvisible = false, changeWeekCount = false)
         }
 
         return value

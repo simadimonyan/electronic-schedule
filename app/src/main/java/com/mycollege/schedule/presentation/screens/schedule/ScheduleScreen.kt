@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -70,7 +71,7 @@ fun ScheduleScreen(
     ScheduleTheme {
         Box(modifier = Modifier
             .fillMaxSize()
-            .padding(top=20.dp)) {
+            .padding(top = 20.dp)) {
 
             Column(
                 modifier = Modifier
@@ -155,6 +156,11 @@ fun SettingsButton(navController: NavHostController) {
 fun WeekScheduleRender(viewModel: ScheduleViewModel) {
 
     val scheduleState by viewModel.scheduleState.collectAsState()
+    val weekChangeEvent by viewModel.shared.changeWeekCount.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (weekChangeEvent) viewModel.changeWeekCountEvent() else viewModel.changeWeekCountEvent()
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -228,6 +234,11 @@ fun WeekScheduleRender(viewModel: ScheduleViewModel) {
 fun TodayScheduleRender(viewModel: ScheduleViewModel) {
 
     val scheduleState by viewModel.scheduleState.collectAsState()
+    val weekChangeEvent by viewModel.shared.changeWeekCount.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (weekChangeEvent) viewModel.changeWeekCountEvent() else viewModel.changeWeekCountEvent()
+    }
 
     Row(
         modifier = Modifier

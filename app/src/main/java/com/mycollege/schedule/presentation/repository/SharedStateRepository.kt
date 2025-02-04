@@ -92,6 +92,13 @@ class SharedStateRepository @Inject constructor() {
     private val _scheduleFullWeek = MutableStateFlow(false)
     val scheduleFullWeek: StateFlow<Boolean> = _scheduleFullWeek
 
+    private val _changeWeekCount = MutableStateFlow(false)
+    val changeWeekCount: StateFlow<Boolean> = _changeWeekCount
+
+    fun updateWeekChangeMode(toChange: Boolean) {
+        _changeWeekCount.update { toChange }
+    }
+
     fun updateFullWeek(isFull: Boolean) {
         _scheduleFullWeek.update { isFull }
     }

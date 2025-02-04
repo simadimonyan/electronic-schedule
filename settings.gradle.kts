@@ -7,6 +7,9 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
+        maven {
+            url = uri("https://artifactory-external.vkpartner.ru/artifactory/maven")
+        }
         mavenCentral()
         gradlePluginPortal()
         maven { setUrl("https://artifactory-external.vkpartner.ru/artifactory/maven/") }

@@ -3,7 +3,6 @@ package com.mycollege.schedule.presentation.screens.settings.data
 import androidx.lifecycle.ViewModel
 import com.mycollege.schedule.data.cache.CacheManager
 import com.mycollege.schedule.presentation.repository.SharedStateRepository
-import com.mycollege.schedule.presentation.screens.settings.data.SettingsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -18,11 +17,20 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.MakeNavigationInvisible -> makeNavInvisible(event.isVisible)
             is SettingsEvent.SaveSettings -> saveSettings()
             is SettingsEvent.MakeScheduleWeekFull -> makeScheduleFullWeek(event.isFull)
+            is SettingsEvent.MakeWeekCountDifferent -> changeWeekCountMode(event.toChange)
         }
     }
 
+    private fun changeWeekCountMode(toChange: Boolean) {
+        shared.updateWeekChangeMode(toChange)
+    }
+
     private fun saveSettings() {
-        cacheManager.saveActualSettings(CacheManager.Settings(shared.scheduleFullWeek.value, shared.navigationInvisibility.value))
+        cacheManager.saveActualSettings(CacheManager.Settings(
+            shared.scheduleFullWeek.value,
+            shared.navigationInvisibility.value,
+            shared.changeWeekCount.value)
+        )
     }
 
     private fun makeScheduleFullWeek(isFull: Boolean) {
