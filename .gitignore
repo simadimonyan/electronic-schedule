@@ -14,3 +14,7 @@
 .cxx
 /gradle.properties
 ./idea
+idea
+.idea
+.kotlin
+./kotlin
