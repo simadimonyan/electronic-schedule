@@ -11,28 +11,30 @@ plugins {
     id("ru.ok.tracer").version("1.0.1")
 }
 
+val properties = Properties().apply { load(File(rootProject.rootDir, "gradle.properties").inputStream()) }
+
+val pushServerAccessToken = properties["pushserver.accessToken"] as String
+val remoteConfigAppId = properties["remoteconfig.appId"] as String
+val pushClientProjectId = properties["pushclient.projectId"] as String
+val signingKeyPass = properties["signKeyPassword"] as String
+val signingKeyPath = properties["signKeyPath"] as String
+val tracerPluginToken = properties["tracer.pluginToken"] as String
+val tracerAppToken = properties["tracer.appToken"] as String
+
 tracer {
     create("defaultConfig") {
-        pluginToken = "562suLzs2fpFm6K28WZYqYUR0tJRWE39l1RNNOpdiyv1"
-        appToken = "cIyaFR772N1jvb5ltIKBukXI9XFuOwwvzz00tSGKwmr1"
+        pluginToken = tracerPluginToken
+        appToken = tracerAppToken
 
         uploadMapping = true
     }
 
 }
 
-val properties = Properties().apply { load(File(rootProject.rootDir, "gradle.properties").inputStream())
-}
-
-val pushServerAccessToken = properties["pushserver.accessToken"] as String
-val remoteConfigAppId = properties["remoteconfig.appId"] as String
-val pushClientProjectId = properties["pushclient.projectId"] as String
-val signingKeyPass = properties["signKeyPassword"] as String
-
 android {
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/dimitrisimonyan/Yandex.Disk.localized/Проекты/Android/signkey")
+            storeFile = file(signingKeyPath)
             keyAlias = "application"
             keyPassword = signingKeyPass
             storePassword = signingKeyPass
