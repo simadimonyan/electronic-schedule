@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -14,19 +16,22 @@ tracer {
         pluginToken = "562suLzs2fpFm6K28WZYqYUR0tJRWE39l1RNNOpdiyv1"
         appToken = "cIyaFR772N1jvb5ltIKBukXI9XFuOwwvzz00tSGKwmr1"
 
-        // Включает загрузку маппингов для билда. По умолчанию включена
         uploadMapping = true
     }
 
 }
 
+val properties = Properties().apply { load(File(rootProject.rootDir, "gradle.properties").inputStream())
+}
+
+val pushServerAccessToken = properties["pushserver.accessToken"] as String
+val remoteConfigAppId = properties["remoteconfig.appId"] as String
+val pushClientProjectId = properties["pushclient.projectId"] as String
+
 android {
     signingConfigs {
         create("release") {
             storeFile = file("/Users/dimitrisimonyan/Yandex.Disk.localized/Проекты/Android/signkey")
-            storePassword = "vd410078060"
-            keyAlias = "application"
-            keyPassword = "vd410078060"
         }
     }
     namespace = "com.mycollege.schedule"
@@ -35,7 +40,7 @@ android {
     defaultConfig {
         applicationId = "com.mycollege.schedule"
         minSdk = 29
-        versionCode = 3
+        versionCode = 4
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,6 +50,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "ACCESS_TOKEN", "\"$pushServerAccessToken\"")
+            buildConfigField("String", "REMOTE_CONFIG_APP_ID", "\"$remoteConfigAppId\"")
+            buildConfigField("String", "PUSH_CLIENT_PROJECT_ID", "\"$pushClientProjectId\"")
+        }
         release {
             isMinifyEnabled = true //R8 compiler
             isShrinkResources = true //Shrinking
@@ -53,6 +63,10 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+
+            buildConfigField("String", "ACCESS_TOKEN", "\"$pushServerAccessToken\"")
+            buildConfigField("String", "REMOTE_CONFIG_APP_ID", "\"$remoteConfigAppId\"")
+            buildConfigField("String", "PUSH_CLIENT_PROJECT_ID", "\"$pushClientProjectId\"")
         }
     }
     compileOptions {
@@ -64,6 +78,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeCompiler {
         enableStrongSkippingMode = true
@@ -82,6 +97,12 @@ android {
 }
 
 dependencies {
+    implementation(libs.logging.interceptor)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+    implementation(libs.remoteconfig)
+
     implementation(libs.pushclient)
 
     implementation(platform(libs.tracer.platform))

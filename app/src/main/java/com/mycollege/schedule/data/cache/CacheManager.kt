@@ -18,12 +18,35 @@ class CacheManager @Inject constructor(
     private val todayScheduleKey = "today_schedule_key"
     private val firstStartUp = "first_startup"
     private val alarmsKey = "alarms"
+    private val rustoreConfigKey = "rustore_config"
 
     data class Configuration(val course: String, val speciality: String, val group: String)
 
     data class IntentConf(val id: Int, val intent: Intent)
 
     data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean, val changeWeekCount: Boolean = false)
+
+    data class RuStoreConfig(val pushToken: String)
+
+    fun loadLastRuStoreConfig(): RuStoreConfig {
+        val json = preferences.getString(rustoreConfigKey, null)
+
+        val type = object : TypeToken<RuStoreConfig>() {}.type
+
+        val value = try {
+            gson.fromJson(json, type)
+        }
+        catch (e: Exception) {
+            RuStoreConfig("")
+        }
+
+        return value
+    }
+
+    fun saveActualRuStoreConfig(configuration: RuStoreConfig) {
+        val json = gson.toJson(configuration)
+        preferences.edit().putString(rustoreConfigKey, json).apply()
+    }
 
     fun loadAlarms(): ArrayList<IntentConf> {
         val json = preferences.getString(alarmsKey, null)

@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Schedule"
         android:enableOnBackInvokedCallback="true"
+        android:usesCleartextTraffic="true"
         tools:targetApi="34">
         <activity
             android:name="com.mycollege.schedule.presentation.screens.start.MainActivity"

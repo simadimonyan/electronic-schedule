@@ -46,7 +46,7 @@
       </SelectionState>
       <SelectionState runConfigName="Мой_Колледж.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-01-28T16:33:02.014108Z">
+        <DropdownSelection timestamp="2025-02-24T15:21:40.925085Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/dimitrisimonyan/.android/avd/Medium_Phone_API_35_2.avd" />

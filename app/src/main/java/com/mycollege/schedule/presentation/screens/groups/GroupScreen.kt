@@ -213,7 +213,7 @@ fun ActionButton(text: String, icon: Int, onClick: () -> Unit, enabled: Boolean)
             .padding(20.dp, 30.dp, 20.dp, 0.dp)
             .size(0.dp, 65.dp),
         shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = buttons),
+        colors = ButtonDefaults.buttonColors(containerColor = buttons, disabledContainerColor = Color.LightGray),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
         enabled = enabled
     ) {

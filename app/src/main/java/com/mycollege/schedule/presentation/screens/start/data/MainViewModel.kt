@@ -23,7 +23,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val resources: ResourceManager,
     private val cacheUpdater: CacheUpdater,
-    private val cacheManager: CacheManager,
+    val cacheManager: CacheManager,
     val shared: SharedStateRepository
 ) : ViewModel() {
 

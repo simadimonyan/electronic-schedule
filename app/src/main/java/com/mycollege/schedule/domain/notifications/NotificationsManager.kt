@@ -1,6 +1,7 @@
 package com.mycollege.schedule.domain.notifications
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,10 +14,17 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.mycollege.schedule.R
+import com.mycollege.schedule.data.cache.CacheManager
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import ru.ok.tracer.crash.report.TracerCrashReport
 import ru.rustore.sdk.pushclient.messaging.exception.RuStorePushClientException
 import ru.rustore.sdk.pushclient.messaging.model.RemoteMessage
 import ru.rustore.sdk.pushclient.messaging.service.RuStoreMessagingService
+import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 class NotificationsManager {
 
@@ -108,15 +116,20 @@ class NotificationReceiver : BroadcastReceiver() {
 
 }
 
-class RuStoreMessagingService : RuStoreMessagingService() {
+@AndroidEntryPoint
+class RuStoreMessagingService : RuStoreMessagingService(), CoroutineScope {
 
+    @Inject lateinit var cacheManager: CacheManager
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
+
+    @SuppressLint("HardwareIds")
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("App", "onNewToken token = $token")
-        /*
-         Вам необходимо отправить полученный пуш-токен на свой сервер,
-         с которого будет осуществляться рассылка пуш-уведомлений.
-         */
+        cacheManager.saveActualRuStoreConfig(CacheManager.RuStoreConfig(token))
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
