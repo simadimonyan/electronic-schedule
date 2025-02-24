@@ -18,3 +18,5 @@ idea
 .idea
 .kotlin
 ./kotlin
+/app/build
+./app/build

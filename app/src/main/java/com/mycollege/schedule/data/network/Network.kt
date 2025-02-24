@@ -26,18 +26,18 @@ class Network {
 
 class RetrofitClient(private val urlString: String) {
 
-    private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(logging)
-        .build()
+//    private val logging = HttpLoggingInterceptor().apply {
+//        level = HttpLoggingInterceptor.Level.BODY
+//    }
+//
+//    private val client = OkHttpClient.Builder()
+//        .addInterceptor(logging)
+//        .build()
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(urlString)
-            .client(client)
+            //.client(client) --debug only
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

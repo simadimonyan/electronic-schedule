@@ -27,11 +27,15 @@ val properties = Properties().apply { load(File(rootProject.rootDir, "gradle.pro
 val pushServerAccessToken = properties["pushserver.accessToken"] as String
 val remoteConfigAppId = properties["remoteconfig.appId"] as String
 val pushClientProjectId = properties["pushclient.projectId"] as String
+val signingKeyPass = properties["signKeyPassword"] as String
 
 android {
     signingConfigs {
         create("release") {
             storeFile = file("/Users/dimitrisimonyan/Yandex.Disk.localized/Проекты/Android/signkey")
+            keyAlias = "application"
+            keyPassword = signingKeyPass
+            storePassword = signingKeyPass
         }
     }
     namespace = "com.mycollege.schedule"

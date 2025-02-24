@@ -70,18 +70,15 @@ class MainActivity : ComponentActivity() {
                             val server = rc.getString("PushServer")
                             val accessToken = BuildConfig.ACCESS_TOKEN
 
-                            Log.d("RuStoreMessagingService", "PushServer: $server")
-
                             if (server.isNotEmpty()) {
 
                                 scope.launch {
-                                    Log.d("RuStoreMessagingService", "Отправка запроса на $server")
-                                    Log.d("RuStoreMessagingService", "URL запроса: ${RetrofitClient(server).ledgerApi}")
+                                    Log.d("RuStoreMessagingService", "Отправка запроса")
 
                                     try {
                                         val pushToken = mainViewModel.cacheManager.loadLastRuStoreConfig().pushToken;
 
-                                        val response = RetrofitClient(server).ledgerApi.pullTokenUp(
+                                        RetrofitClient(server).ledgerApi.pullTokenUp(
                                             PushTokenRequest(
                                                 Settings.Secure.getString(applicationContext.contentResolver, Settings.Secure.ANDROID_ID),
                                                 Build.MODEL,
@@ -89,7 +86,6 @@ class MainActivity : ComponentActivity() {
                                                 accessToken
                                             )
                                         )
-                                        Log.d("RuStoreMessagingService", "Ответ сервера: $response")
                                     } catch (e: Exception) {
                                         Log.e("RuStoreMessagingService", "Ошибка запроса: ${e.message}", e)
                                     }

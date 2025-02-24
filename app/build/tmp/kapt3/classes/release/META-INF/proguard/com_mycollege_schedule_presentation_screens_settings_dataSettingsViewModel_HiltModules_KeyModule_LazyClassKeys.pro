@@ -1,0 +1,2 @@
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.settings.data.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.settings.data.SettingsViewModel

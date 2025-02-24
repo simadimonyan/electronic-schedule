@@ -1,0 +1,7 @@
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.settings.data.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.settings.data.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.schedule.data.ScheduleViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.schedule.data.ScheduleViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.start.data.MainViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.start.data.MainViewModel
+-keep,allowobfuscation,allowshrinking class com.mycollege.schedule.presentation.screens.start.data.StartViewModel
