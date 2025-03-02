@@ -26,9 +26,9 @@ class CacheManager @Inject constructor(
 
     data class Settings(val fullWeek: Boolean, val isNavInvisible: Boolean, val changeWeekCount: Boolean = false)
 
-    data class RuStoreConfig(val pushToken: String)
+    data class RuStoreConfig(val pushToken: String, val sentToServer: Boolean)
 
-    fun loadLastRuStoreConfig(): RuStoreConfig {
+    fun loadLastRuStoreConfig(): RuStoreConfig? {
         val json = preferences.getString(rustoreConfigKey, null)
 
         val type = object : TypeToken<RuStoreConfig>() {}.type
@@ -37,7 +37,7 @@ class CacheManager @Inject constructor(
             gson.fromJson(json, type)
         }
         catch (e: Exception) {
-            RuStoreConfig("")
+            RuStoreConfig("", false)
         }
 
         return value

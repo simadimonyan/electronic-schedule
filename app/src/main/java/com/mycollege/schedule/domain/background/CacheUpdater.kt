@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.preference.PreferenceManager
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -22,15 +23,21 @@ import com.mycollege.schedule.domain.usecases.GetSchedule.Companion.getSchedule
 import com.mycollege.schedule.domain.usecases.GetWeekCount
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CacheUpdater @Inject constructor(
     private var cacheManager: CacheManager
 ) {
@@ -102,14 +109,55 @@ class CacheUpdater @Inject constructor(
         )
     }
 
+    fun scheduleWeekChangeWorker(context: Context) {
+        val workRequest = PeriodicWorkRequestBuilder<WeekChangeWorker>(7, TimeUnit.DAYS)
+            .setInitialDelay(getDelayUntilNextMonday(), TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "WeekChangeWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun getDelayUntilNextMonday(): Long {
+        val now = LocalDateTime.now()
+        val nextMonday = now.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).withHour(0).withMinute(0).withSecond(0)
+        return Duration.between(now, nextMonday).toMillis()
+    }
+
+}
+
+class WeekChangeWorker(
+    context: Context,
+    workerParams: WorkerParameters,
+) : CoroutineWorker(context, workerParams) {
+
+    private var cacheManager: CacheManager = CacheManager(PreferenceManager.getDefaultSharedPreferences(applicationContext))
+
+    override suspend fun doWork(): Result {
+        return try {
+            val settings = cacheManager.loadLastSettings()
+            cacheManager.saveActualSettings(CacheManager.Settings(settings.fullWeek, settings.isNavInvisible, !settings.changeWeekCount))
+            Log.e("WeekChangerWorker", "Week auto-changing executed!")
+            Result.success()
+        } catch (e: Exception) {
+            Log.e("WeekChangerWorker", "Error in worker", e)
+            e.printStackTrace()
+            Result.failure()
+        }
+
+    }
 }
 
 @Suppress("SameParameterValue")
-class GroupSyncWorker @Inject constructor(
+class GroupSyncWorker(
     context: Context,
     workerParams: WorkerParameters,
-    var cacheManager: CacheManager,
 ) : CoroutineWorker(context, workerParams) {
+
+    private var cacheManager: CacheManager = CacheManager(PreferenceManager.getDefaultSharedPreferences(applicationContext))
 
     override suspend fun doWork(): Result {
         return try {
@@ -141,11 +189,12 @@ class GroupSyncWorker @Inject constructor(
 
 }
 
-class ScheduleWorker @Inject constructor(
+class ScheduleWorker(
     context: Context,
     workerParams: WorkerParameters,
-    var cacheManager: CacheManager
 ) : CoroutineWorker(context, workerParams) {
+
+    private var cacheManager: CacheManager = CacheManager(PreferenceManager.getDefaultSharedPreferences(applicationContext))
 
     override suspend fun doWork(): Result {
         return try {

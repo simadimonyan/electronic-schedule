@@ -5,6 +5,7 @@ import android.app.Application
 import android.provider.Settings
 import android.util.Log
 import com.mycollege.schedule.domain.background.RemoteConfigListener
+import com.yandex.mobile.ads.common.MobileAds
 import dagger.hilt.android.HiltAndroidApp
 import ru.ok.tracer.HasTracerConfiguration
 import ru.ok.tracer.TracerConfiguration
@@ -28,6 +29,10 @@ class App : Application(), HasTracerConfiguration {
     @SuppressLint("HardwareIds")
     override fun onCreate() {
         super.onCreate()
+
+        MobileAds.initialize(this) {
+            Log.i("MobileAds", "Initialized")
+        }
 
         val listener = RemoteConfigListener()
 

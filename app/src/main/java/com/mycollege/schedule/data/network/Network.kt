@@ -1,5 +1,6 @@
 package com.mycollege.schedule.data.network
 
+import com.google.gson.GsonBuilder
 import com.mycollege.schedule.data.network.api.LedgerAPI
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -34,11 +35,15 @@ class RetrofitClient(private val urlString: String) {
 //        .addInterceptor(logging)
 //        .build()
 
+    private val gson = GsonBuilder()
+        .setLenient()  // "bad" json process
+        .create()
+
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(urlString)
-            //.client(client) --debug only
-            .addConverterFactory(GsonConverterFactory.create())
+           // .client(client) // --debug only
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 

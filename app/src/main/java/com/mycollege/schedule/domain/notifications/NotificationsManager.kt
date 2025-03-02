@@ -129,7 +129,13 @@ class RuStoreMessagingService : RuStoreMessagingService(), CoroutineScope {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("App", "onNewToken token = $token")
-        cacheManager.saveActualRuStoreConfig(CacheManager.RuStoreConfig(token))
+
+        val config = cacheManager.loadLastRuStoreConfig()
+
+        if (config == null || config.pushToken != token) {
+            Log.d("App", "New token cached")
+            cacheManager.saveActualRuStoreConfig(CacheManager.RuStoreConfig(token, false))
+        }
     }
 
     override fun onMessageReceived(message: RemoteMessage) {

@@ -95,6 +95,7 @@ class MainViewModel @Inject constructor(
             val context = resources.getContext()
             cacheUpdater.setupPeriodicWork(context)
             cacheUpdater.setupPeriodicScheduleWork(context)
+            cacheUpdater.scheduleWeekChangeWorker(context)
         }
     }
 

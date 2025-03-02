@@ -101,6 +101,7 @@ class ScheduleViewModel @Inject constructor(
 
             var chosenGroup: DataClasses.Group? = null
             var count = GetWeekCount.calculateCount()
+
             if (shared.changeWeekCount.value) count = if (count == 1) 0 else 1 // if change week event is executed
 
             if (groups != null) {

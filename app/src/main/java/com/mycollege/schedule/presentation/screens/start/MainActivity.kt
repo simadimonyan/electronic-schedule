@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
 import com.mycollege.schedule.BuildConfig
+import com.mycollege.schedule.data.cache.CacheManager
 import com.mycollege.schedule.data.network.RetrofitClient
 import com.mycollege.schedule.data.network.dto.PushTokenRequest
 import com.mycollege.schedule.presentation.screens.start.data.DataEvent
@@ -73,19 +74,33 @@ class MainActivity : ComponentActivity() {
                             if (server.isNotEmpty()) {
 
                                 scope.launch {
-                                    Log.d("RuStoreMessagingService", "Отправка запроса")
-
                                     try {
-                                        val pushToken = mainViewModel.cacheManager.loadLastRuStoreConfig().pushToken;
+                                        val config = mainViewModel.cacheManager.loadLastRuStoreConfig()
 
-                                        RetrofitClient(server).ledgerApi.pullTokenUp(
-                                            PushTokenRequest(
-                                                Settings.Secure.getString(applicationContext.contentResolver, Settings.Secure.ANDROID_ID),
-                                                Build.MODEL,
-                                                pushToken,
-                                                accessToken
-                                            )
-                                        )
+                                        if (config != null && !config.sentToServer) {
+
+                                            Log.d("RuStoreMessagingService", "Отправка запроса")
+
+                                            try {
+                                                val response = RetrofitClient(server).ledgerApi.pullTokenUp(
+                                                    PushTokenRequest(
+                                                        Settings.Secure.getString(applicationContext.contentResolver, Settings.Secure.ANDROID_ID),
+                                                        Build.MODEL,
+                                                        config.pushToken,
+                                                        accessToken
+                                                    )
+                                                )
+
+                                                Log.d("RuStoreMessagingService", "Ответ сервера: ${response}")
+
+                                            } catch (e: Exception) {
+                                                Log.w("RuStoreMessagingService", "Ошибка парсинга JSON: ${e.message}")
+                                            }
+
+                                            // token has sent
+                                            mainViewModel.cacheManager.saveActualRuStoreConfig(CacheManager.RuStoreConfig(config.pushToken, true))
+
+                                        }
                                     } catch (e: Exception) {
                                         Log.e("RuStoreMessagingService", "Ошибка запроса: ${e.message}", e)
                                     }

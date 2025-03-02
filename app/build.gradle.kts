@@ -20,6 +20,7 @@ val signingKeyPass = properties["signKeyPassword"] as String
 val signingKeyPath = properties["signKeyPath"] as String
 val tracerPluginToken = properties["tracer.pluginToken"] as String
 val tracerAppToken = properties["tracer.appToken"] as String
+val advertisementBannerId = properties["advertisement.bannerId"] as String
 
 tracer {
     create("defaultConfig") {
@@ -46,8 +47,8 @@ android {
     defaultConfig {
         applicationId = "com.mycollege.schedule"
         minSdk = 29
-        versionCode = 6
-        versionName = "1.1"
+        versionCode = 7
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -57,9 +58,12 @@ android {
 
     buildTypes {
         debug {
+            signingConfig = signingConfigs.getByName("release")
+
             buildConfigField("String", "ACCESS_TOKEN", "\"$pushServerAccessToken\"")
             buildConfigField("String", "REMOTE_CONFIG_APP_ID", "\"$remoteConfigAppId\"")
             buildConfigField("String", "PUSH_CLIENT_PROJECT_ID", "\"$pushClientProjectId\"")
+            buildConfigField("String", "ADVERTISEMENT_BANNER_ID", "\"$advertisementBannerId\"")
         }
         release {
             isMinifyEnabled = true //R8 compiler
@@ -73,6 +77,7 @@ android {
             buildConfigField("String", "ACCESS_TOKEN", "\"$pushServerAccessToken\"")
             buildConfigField("String", "REMOTE_CONFIG_APP_ID", "\"$remoteConfigAppId\"")
             buildConfigField("String", "PUSH_CLIENT_PROJECT_ID", "\"$pushClientProjectId\"")
+            buildConfigField("String", "ADVERTISEMENT_BANNER_ID", "\"$advertisementBannerId\"")
         }
     }
     compileOptions {
@@ -103,6 +108,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.mobileads)
+
     implementation(libs.logging.interceptor)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

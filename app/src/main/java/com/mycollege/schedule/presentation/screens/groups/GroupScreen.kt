@@ -27,7 +27,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,8 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mycollege.schedule.BuildConfig
 import com.mycollege.schedule.R
+import com.mycollege.schedule.domain.background.YandexAdsListener
 import com.mycollege.schedule.presentation.screens.groups.components.BottomSheetContent
 import com.mycollege.schedule.presentation.screens.groups.data.GroupEvent
 import com.mycollege.schedule.presentation.screens.groups.data.GroupState
@@ -47,7 +53,11 @@ import com.mycollege.schedule.presentation.screens.groups.data.GroupsViewModel
 import com.mycollege.schedule.presentation.ui.theme.ScheduleTheme
 import com.mycollege.schedule.presentation.ui.theme.background
 import com.mycollege.schedule.presentation.ui.theme.buttons
+import com.yandex.mobile.ads.banner.BannerAdSize
+import com.yandex.mobile.ads.banner.BannerAdView
+import com.yandex.mobile.ads.common.AdRequest
 import kotlinx.coroutines.launch
+import ru.rustore.sdk.remoteconfig.RemoteConfigClient
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
@@ -63,6 +73,10 @@ fun MainFrame(viewModel: GroupsViewModel, pagerState: PagerState) {
     val context = LocalContext.current
     val groupState by viewModel.groupState.collectAsState()
     val scope = rememberCoroutineScope()
+    var showAds by remember { mutableStateOf(false) }
+
+    RemoteConfigClient.instance
+        .getRemoteConfig().addOnSuccessListener { rc -> showAds = rc.getBoolean("Advertisement")}
 
     ScheduleTheme {
         Scaffold(modifier = Modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0), containerColor = background) { innerPadding ->
@@ -94,11 +108,27 @@ fun MainFrame(viewModel: GroupsViewModel, pagerState: PagerState) {
                         groupState.scheduleCreation
                         scope.launch {
                             viewModel.shared.updateIndex(1)
-                            pagerState.animateScrollToPage(1)
+                            pagerState
+                                .animateScrollToPage(1)
                         }
                     },
                     enabled = groupState.group != "Выбрать"
                 )
+
+                if (showAds) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        AndroidView(factory = { context ->
+                            BannerAdView(context).apply {
+                                setAdUnitId(BuildConfig.ADVERTISEMENT_BANNER_ID)
+                                setAdSize(BannerAdSize.stickySize(context, 370))
+                                val adRequest = AdRequest.Builder().build()
+                                setBannerAdEventListener(YandexAdsListener())
+                                loadAd(adRequest)
+                            }
+                        })
+                    }
+                }
+
             }
         }
     }
